@@ -1,0 +1,10 @@
+_*
+auto
+bin
+*.log
+src
+etc
+features
+man
+share
+standard
