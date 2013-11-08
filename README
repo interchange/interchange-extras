@@ -1,0 +1,15 @@
+Feel free to download these files and use in your project.
+
+The 'server' directory contains files for the Interchange server,
+located at /usr/local/interchange, or wherever your server lives.
+
+Provided by Perusion, http://www.perusion.com
+
+We provide paid support only, but will gladly accept patches.
+
+--------
+
+Copyright (C) 2013 Hanson Investments, Inc. d/b/a Perusion
+
+This program is offered without warranty of any kind.
+See file LICENSE for redistribution terms.
