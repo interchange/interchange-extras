@@ -1,0 +1,29 @@
+===========
+ MailChimp 
+===========
+
+Install these files in the appropriate directories. The 'i' directory
+represents the path to your Interchange Server (perhaps /usr/local/interchange).
+
+i/usertag/mailchimp.tag 
+	- call this tag from an mv_click for a newsletter signup form, e.g.:
+		[set doSubscribe]
+			[mailchimp ...]
+		[/set]
+		<form ...>
+		...
+		<input type=hidden name=mv_form_profile ...>
+		<input type=hidden name=mv_click value=doSubscribe>
+
+i/usertag/mailchimp360.tag
+	- IC support for Ecommerce360, allows reporting orders back to MailChimp.
+		http://kb.mailchimp.com/article/what-is-ecommerce360-and-how-does-it-work-with-mailchimp
+
+i/usertag/logger.tag
+	- logging tag.
+
+CPAN modules required:
+	LWP::UserAgent
+	JSON
+
+See POD in mailchimp.tag for documentation (`perldoc i/usertag/mailchimp.tag`).
