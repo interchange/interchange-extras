@@ -1,0 +1,186 @@
+# Copyright 2005-2007 Interchange Development Group and others
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.  See the LICENSE file for details.
+# 
+# $Id: htmlarea.widget,v 1.16 2007-09-26 19:56:56 racke Exp $
+
+CodeDef ckeditor Widget 1
+CodeDef ckeditor Description CKEditor widget
+CodeDef ckeditor Documentation <<EOD
+=head1 NAME
+
+CKEditor widget for Interchange
+
+=head1 SYNOPSIS
+
+  [display type=ckeditor name=foo height=NN width=NNN]
+
+ or
+
+  [table-editor
+  	widget.foo=ckeditor
+	...
+  ]
+
+=head1 DESCRIPTION
+
+The C<ckeditor> widget makes calls to a rich-text editor that replaces 
+a C<TEXTAREA> component on supported browsers. It operates as a normal 
+textarea otherwise.
+
+One flavor of rich-text editors is available,the new replacement for
+fckeditor (FCKeditor), CKEditor.
+
+For more details, see: http://docs.cksource.com/CKEditor_3.x/Developers_Guide
+
+
+=head1 INSTALLATION
+
+To install, get latest version of ckeditor at http://ckeditor.com/download
+and install in the C<ckeditor> directory of your DocumentRoot. 
+
+That means that routines can be accessed with a base HREF of C</ckeditor/>.
+
+This widget requires Interchange 5.0 and higher.
+
+If you are planning on using it outside of the Interchange UI, you must
+either have the output-style of layout (the "standard" demo) with a 
+[scratch meta_header] call in the <HEAD> area, or you must place the
+equivalent of the following in the header of any page to use this widget:
+
+
+<script type="text/javascript" src="{PATH}ckeditor.js"></script>
+
+=cut
+EOD
+
+CodeDef ckeditor Routine <<EOR
+sub {
+	my ($opt) = @_;
+#::logDebug("called ckeditor widget, opts:" . uneval($opt));
+	use vars qw/$Tag/;
+					
+	my $path = $opt->{path} || '/ckeditor/';
+
+	my $parms = {
+					header => qq|
+<script type="text/javascript" src="{PATH}ckeditor.js"></script>
+|,
+					area => qq|<textarea id="{NAME}" rows="{HEIGHT}" cols="{WIDTH}" name="{NAME}">{VALUE}</textarea>|,
+					post => qq|
+<script type="text/javascript">
+    CKEDITOR.replace('{NAME}',
+		{
+			toolbar : {TOOLBAR},
+			{STYLES?}stylesSet : [ {STYLES} ],{/STYLES?}
+			width	: '{WIDTH}',
+			height	: '{HEIGHT}',
+			{FILEBROWSE_IMG?}filebrowserImageBrowseUrl : '{FILEBROWSE_IMG}',{/FILEBROWSE_IMG?}
+			{FILEUPLOAD_IMG?}filebrowserImageUploadUrl : '{FILEUPLOAD_IMG}',{/FILEUPLOAD_IMG?}
+			filebrowserBrowseUrl : '{FILEBROWSE}',
+			filebrowserUploadUrl : '{FILEUPLOAD}'
+		}
+	);
+</script>|,
+
+	};
+	
+
+	my $pname = $opt->{name};
+
+	$pname =~ s/\W/_/g;
+
+	$::Scratch->{meta_header} ||= '';
+	$::Scratch->{meta_header} .= $Tag->uc_attr_list({hash => {name => $pname,
+															  path => $path}}, $parms->{header});
+
+	my $val;
+
+	if($opt->{value} =~ /</) {
+		$val = HTML::Entities::encode($opt->{value});
+	}
+	else {
+		$val = $opt->{value};
+	}
+
+	my $pre_scr = '';
+	my $post_scr = '';
+	my $onmouse = '';
+	
+    $opt->{height} ||= '200px';
+    $opt->{width} ||= '850px';
+
+#    $opt->{height} =~ s/\D+//;
+#    $opt->{width} =~ s/\D+//;
+
+	my @options = split /[,\0\n+]/, $opt->{options};
+#::logDebug("ckeditor options = " . uneval($opt->{options}));
+#::logDebug("ckeditor options = " . join ',',@options);
+	my %option_hash;
+	for(@options) {
+		my ($k,$v) = split(/=/, $_);
+		$v =~ s|&#44;|,|g;
+		$option_hash{$k} = $v;
+	}
+#::logDebug("ckeditor option_hash = " . uneval(\%option_hash));
+
+	
+##	You can define any toolbar combo you want, just assign to $opt->{toolbar}
+##	Leave empty for full toolbar, can also be the word 'Basic'.
+
+	my $sample_toolbar = <<EOF;
+		[
+			['Source','-','Bold','Italic','Cut','Copy','Paste','Undo','Redo']
+		]
+EOF
+
+	my $custom_toolbar = <<EOF;
+		[
+			{ name: 'styles', items : [ 'Styles','Format','Font','FontSize' ] },
+			{ name: 'colors', items : [ 'TextColor','BGColor' ] },
+			{ name: 'editing', items : [ 'Find','Replace','-','SpellChecker', 'Scayt' ] },
+			{ name: 'tools', items : [ 'Maximize', 'ShowBlocks', 'Source' ] },
+			'/',
+			{ name: 'clipboard', items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },
+			{ name: 'basicstyles', items : [ 'Bold','Italic','Underline','Strike','-','RemoveFormat' ] },
+			{ name: 'paragraph', items : [ 'NumberedList','BulletedList','-','Outdent','Indent','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight' ] },
+			{ name: 'links', items : [ 'Link','Unlink','Anchor' ] },
+			{ name: 'insert', items : [ 'Image','Table','HorizontalRule','Smiley','SpecialChar' ] }
+		]
+EOF
+
+	my $image_dir = $option_hash{image_dir} || 'images/blog';
+	my $filebrowse = $Tag->area({ href => 'admin/ck_file_browse', form => "mask=$image_dir", });
+	my $filebrowse_img = $Tag->area({ href => 'admin/ck_file_browse', form => "mask=$image_dir&type=images&no_up=1", });
+	my $fileupload = $Tag->area({ href => 'process', form => "mv_todo=return&mv_nextpage=admin/ck_do_upload&ui_upload_fn=$image_dir&ui_upload_umask=022&not_img=1" });
+	my $fileupload_img = $Tag->area({ href => 'process', form => "mv_todo=return&mv_nextpage=admin/ck_do_upload&ui_upload_fn=$image_dir&ui_upload_umask=022" });
+
+	$post_scr .= $Tag->uc_attr_list({hash => {
+												name => $pname,
+												toolbar => $opt->{toolbar} || $option_hash{toolbar} || $custom_toolbar,
+												styles => $option_hash{styles},
+												width => $opt->{width},
+												height => $opt->{height},
+												filebrowse => $filebrowse,
+												filebrowse_img => $filebrowse_img,
+												fileupload => $fileupload,
+												fileupload_img => $fileupload_img,
+											}, body => $parms->{post}});
+#::logDebug("post:$post_scr");	
+	$opt->{anchor_style} ||= 'font-size: smaller';
+
+	my $extra = $opt->{anchor_class} ? qq{ class="$opt->{anchor_class}"} : '';
+	$extra .= qq{ style="$opt->{anchor_style}"} if $opt->{anchor_style};
+	my $textra = $opt->{text_class} ? qq{ class="$opt->{text_class}"} : '';
+	$textra .= qq{ style="$opt->{text_style}"} if $opt->{text_style};
+
+	my $wid = $pre_scr . $Tag->uc_attr_list({hash => {name => $pname,
+		height => $opt->{height}, width => $opt->{width}, onmouse => $onmouse,
+		value => $val}, body => $parms->{area}}) . $post_scr;
+	
+	return $wid;
+}
+EOR
