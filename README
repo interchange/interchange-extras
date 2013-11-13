@@ -1,6 +1,6 @@
 Feel free to download these files and use in your project.
 
-The 'server' directory contains files for the Interchange server,
+The 'i' directory contains files for the Interchange server,
 located at /usr/local/interchange, or wherever your server lives.
 
 Provided by Perusion, http://www.perusion.com
