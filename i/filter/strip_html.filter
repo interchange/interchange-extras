@@ -1,0 +1,9 @@
+CodeDef strip_html Filter
+CodeDef strip_html Routine <<EOR
+sub {
+	my $val = shift;
+	$val =~ s:<[/\w].*?\s?/?>: :gi;
+	$val =~ s:<!--.*-->::gi;
+	return $val;
+}
+EOR

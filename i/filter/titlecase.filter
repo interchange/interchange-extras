@@ -1,0 +1,15 @@
+CodeDef titlecase Filter
+CodeDef titlecase Description First character in every word upper case
+CodeDef titlecase Routine <<EOR
+sub {
+	use locale;
+	if ($Scratch->{mv_locale}) {
+	    POSIX::setlocale(LC_CTYPE, $Scratch->{mv_locale});
+	}
+	my @words = split /\s+/, shift;
+	for(@words) {
+		$_ = ucfirst;
+	}
+	return join ' ', @words;
+}
+EOR

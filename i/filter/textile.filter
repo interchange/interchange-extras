@@ -1,0 +1,25 @@
+CodeDef textile Filter
+CodeDef textile Documentation <<EOD
+	
+	Processes text written in the Textile shorthand formatting to HTML.
+
+	Docs: http://redcloth.org/hobix.com/textile/
+
+	Usage:
+
+		[filter textile]My text here.[/filter]
+
+		[item-filter textile][item-field comment][/item-filter]
+
+EOD
+CodeDef textile Routine <<EOR
+
+package Vend::Interpolate;
+use Text::Textile;
+
+sub {
+	my $textile = new Text::Textile;
+	my $val = $textile->process(shift);
+	return $val;
+}
+EOR
