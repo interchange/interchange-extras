@@ -1,0 +1,18 @@
+[calc]
+	## send to Google Analytics Event Tracking.
+	$Tag->tmp('urchin_extra');
+	my @out;
+	for (keys %{$Session->{errors}}) {
+		my $err = $Session->{errors}{$_};
+		$err =~ s/'.*'/X/;  # remove user-submissions
+		$err =~ s/'/\'/g;
+		s/'/\'/g;
+		push @out, sprintf( q{ga('send', 'event', 'Errors', '%s', '%s', undefined, {'noninteraction': 1});}, $_, $err );
+	}
+	if (my $f = $Session->{failure}) {
+		chomp $f;
+		push @out, sprintf( q{ga('send', 'event', 'Errors', '%s', '%s', undefined, {'noninteraction': 1});}, 'mv_username', $f );
+	}
+	$Scratch->{urchin_extra} = join "\n", @out;
+	return;
+[/calc]

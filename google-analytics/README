@@ -1,0 +1,21 @@
+This analytics script is in the new Universal Analytics format.
+
+Include the analytics script in your template, like so:
+
+	...
+	__ANALYTICS__
+	</body>
+	</html>
+
+Be sure to modify the variable to update the UA number and domain.
+
+
+To track errors as Events:
+	
+	in place of your error tag: [error auto=1]
+	do this:
+
+		[if errors]
+			__ANALYTICS_ERRORS__
+			[error auto=1]
+		[/if]
