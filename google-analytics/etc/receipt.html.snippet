@@ -1,0 +1,22 @@
+<!-- put near bottom of etc/receipt.html; change pageview to whatever your checkout goal is using for the goal page -->
+
+[tmpn pageview]/purchase/receipt[/tmpn]
+[tmp urchin_extra]ga('require', 'ecommerce', 'ecommerce.js');
+ga('ecommerce:addTransaction', {
+	'id': '[value mv_order_number]',
+	'affiliation': '[data session source]',
+	'revenue': '[total-cost noformat=1]',
+	'shipping': '[shipping noformat=1]',
+	'tax': '[salestax noformat=1]'
+  });
+[item-list]ga('ecommerce:addItem', {
+	'id': '[value mv_order_number]',
+	'name': '[item-description]',
+	'sku': '[item-sku]',
+	'category': '[item-field prod_group]',
+	'price': '[item-discount-price noformat=1]',
+	'quantity': '[item-quantity]'
+  });
+[/item-list]
+ga('ecommerce:send');
+[/tmp]
