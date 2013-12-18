@@ -1,0 +1,8 @@
+Install these files in their appropriate directories:
+
+	dbconf/mysql/redirects.mysql
+	products/redirects.txt
+
+Alter your <special_pages/missing.html> file by comparing with the one here.
+
+Append to your <products/mv_metadata.asc> file the <products/mv_metadata.redirects> file's contents.

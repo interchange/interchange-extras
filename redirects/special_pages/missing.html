@@ -1,0 +1,32 @@
+[perl table=redirects]
+	my $old_link = "[subject]";
+	my ($new_link, $status) = $Db{redirects}->get_slice($old_link, [ 'new_link', 'status_code' ], );
+	if($new_link) {
+		$Tag->tmp('rd_link', $new_link);
+		$Tag->tmp('rd_code', $status);
+	}
+	return;
+[/perl]
+[bounce page="[scratch rd_link]" status="[either][scratch rd_code][or]301 Moved Permanently[/either]" if="[scratch rd_link]"]
+
+[tmpn missing_subject][subject][/tmpn]
+[if scratch missing_subject =~ /^admin/]
+[seti ui_error]<h2>[msg arg.0="[subject]"]Sorry, the page (%s) was not found[/msg]</h2>[/seti]
+[/if]
+[bounce page=admin/error if="[if scratch ui_error]1[/if]"]
+
+[tag op=header]
+Status: 404 Not Found
+Content-type: text/html
+[/tag]
+
+[tmp page_title][msg arg.0="[subject]"]Sorry, the page (%s) was not found[/msg][/tmp]
+@_NOLEFT_TOP_@
+
+<h1>[scratch page_title]</h1>
+
+<p>
+[msg arg.0="[subject]" arg.1='<a href="[area ]">' arg.2="</a>"]The requested page (%s) was not found. You can %sreturn to browsing our catalog%s, if you wish.[/msg]
+</p>
+
+@_NOLEFT_BOTTOM_@

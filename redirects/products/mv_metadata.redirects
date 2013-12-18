@@ -1,0 +1,4 @@
+redirects	table					HTTP Redirects														
+redirects::new_link		30									As above, only include the part after the domain									
+redirects::old_link		30									Only include the part after the domain, e.g. http://www.yourstore.com/<b>old_link</b>. Do not include any CGI parameters (e.g. ?foo=bar&syn=ack). Note that the redirects will not work unless the "old_link" page or SKU (or alias) is gone.									{}
+redirects::status_code											defaults to '301' for Permanent Redirect									{}

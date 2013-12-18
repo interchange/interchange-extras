@@ -1,0 +1,7 @@
+Database  redirects  redirects.txt      __SQLDSN__
+Database  redirects  COLUMN_DEF   "old_link=varchar(128) NOT NULL PRIMARY KEY"
+Database  redirects  COLUMN_DEF   "new_link=varchar(128)"
+Database  redirects  COLUMN_DEF   "status_code=varchar(128)"
+Database  redirects  CREATE_EMPTY_TXT 1
+Database  redirects  NAME         old_link new_link status_code
+NoImport redirects
