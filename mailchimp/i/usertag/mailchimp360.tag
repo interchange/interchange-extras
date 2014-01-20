@@ -76,19 +76,26 @@ sub {
 
 		my %order = (
 			id          => $::Values->{mv_order_number} || POSIX::strftime('%Y%m%d%H%M%S', localtime()),
+			campaign_id => $cid_cookie,
 			email_id    => $eid_cookie,
 			total       => Vend::Interpolate::total_cost(),
 			shipping    => $Tag->shipping({ noformat => 1 }),
 			tax         => Vend::Interpolate::salestax(),
 			store_id    => $Tag->filter('alphanumeric 20', $::Variable->{COMPANY}),
 			store_name  => $::Variable->{SERVER_NAME},
-			campaign_id => $cid_cookie,
 			items       => \@items,
 		);
 #::logDebug("mc360: order=" . uneval(\%order));
-		my $status = $Tag->mailchimp({ method => 'ecommOrderAdd', order => \%order, hide => 1, });
+		my $status = $Tag->mailchimp({
+				method => 'ecomm/order-add',
+				order => \%order,
+				hide => !$opt->{show},
+				timeout => 15,
+				queue => 1,
+			});
 #::logDebug("mc360 status: " . $status);
 
+		return $status if $opt->{show};
 	}
 
 	return;
@@ -111,7 +118,7 @@ Options:
 
 =item order
 
-Set to 1 if you need to record an order. This is usually done near the bottom of C<CATROOT/etc/receipt.html>, with this:
+Set to 1 if you need to record an order. This is usually done near the bottom of F<CATROOT/etc/receipt.html>, with this:
 
 	[mailchimp360 order=1]
 
@@ -121,7 +128,7 @@ Usage:
 
 =over 4
 
-Add this to C<CATROOT/catalog.cfg>:
+Add this to F<CATROOT/catalog.cfg>:
 
 	Autoload [mailchimp360]
 
@@ -132,8 +139,7 @@ Testing:
 =over 4
 
 Send a test campaign to yourself with the "Ecommerce 360" tags (under Advanced Tracking options). Click a link, and submit an order. Visit this URL to see the orders:
-
-	http://us1.api.mailchimp.com/1.3/?method=ecommOrders&apikey=[YOUR_API_KEY_HERE]
+L<http://us1.api.mailchimp.com/1.3/?method=ecommOrders&apikey=[YOUR_API_KEY_HERE]>
 
 Additionally, you can uncomment the logDebug lines, and watch the debug log when placing an order. As a last resort, make sure you are getting the special MailChimp cookies assigned by Interchange.
 
@@ -149,12 +155,12 @@ The usual number.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2012 Josh Lavin. All rights reserved.
+Copyright (C) 2012-2014 Josh Lavin. All rights reserved.
 
 This usertag is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Josh Lavin
+Josh Lavin -- Perusion
 
 EOD

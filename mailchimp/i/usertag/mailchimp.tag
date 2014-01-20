@@ -1,203 +1,359 @@
 UserTag mailchimp Order method
 UserTag mailchimp addAttr
-UserTag mailchimp Description MailChimp subscribe/unsubscribe via API
+UserTag mailchimp Description MailChimp interaction via their API
 UserTag mailchimp Routine <<EOR
 require LWP::UserAgent;
 use JSON;
 sub {
-	my ($func, $opt) = @_;
+	my ($method, $opt) = @_;
 
 	use vars qw/$Tag/;
+	my ($log, $die, $warn) = $Tag->logger('mailchimp', 'logs/mailchimp.log');
 
-    my $default = sub {
-        my $thing = shift;
-        return $thing->(@_) if ref($thing) eq 'CODE';
-        return $thing;
-    };
+	if (delete $opt->{queue}) {
+		my $qdb = dbref('mailchimp_queue')
+			or return $die->('no queue table');
+		$qdb->set_slice(undef, { method => $method, opt => uneval($opt) });
+$log->("queued $method, opts were: " . uneval($opt) );
+		return $opt->{hide} ? undef : 1;
+	}
 
-	my %func = (
-		ecommOrderAdd => {
-			parameters => {qw/
-				method   method
-				order    order
-				/
+#use Data::Dumper;
+	my %api = (
+		campaigns => {
+			list => {
+				filters => {
+					campaign_id => q{},
+					parent_id => q{},
+					list_id => q{},
+					folder_id => q{},
+					template_id => q{},
+					status => q{},
+					type => q{},
+					from_name => q{},
+					from_email => q{},
+					title => q{},
+					subject => q{},
+					sendtime_start => q{},
+					sendtime_end => q{},
+					uses_segment => 1,
+					exact => 1,
+				},
+				start => 0,
+				limit => 25,
+				sort_field => q{create_time},
+				sort_dir => q{DESC},
 			},
 		},
-		ecommOrders => {
-			parameters => {qw/
-				method   method
-				start    start
-				limit    limit
-				since    since
-				/
+		ecomm => {
+			'order-add' => {
+				order => {
+					id => q{},
+					campaign_id => q{},
+					email_id => q{},
+					email => q{},
+					total => q{},
+					order_date => q{},
+					shipping => q{},
+					tax => q{},
+					store_id => q{},  # 32 bytes max
+					store_name => q{},
+					items => [
+						{
+							line_num => q{},    # one hash for each line item in cart
+							product_id => q{},  # integer
+							sku => q{},         # max 30 bytes
+							product_name => q{},
+							category_id => q{},     # integer
+							category_name => q{},   # could be: "Root - SubCat1 - SubCat4", etc
+							qty => 1,
+							cost => 0,
+						},
+					],
+				},
 			},
-		},
-		listMembers => {
-			parameters => {qw/
-				method    method
-				id        id
-				status    status
-				since     since
-				start     start
-				limit     limit
-				sort_dir  sort_dir
-				/
+			'order-del' => {
+				store_id => q{},
+				order_id => q{},
 			},
-			default => {
-				status   => 'subscribed',
-				start    => 0,
-				limit    => 100,
-				sort_dir => 'ASC',
-			},
-		},
-		listSubscribe => {
-			parameters => {qw/
-				method              method
-				id                  id
-				email_address       email_address
-				merge_vars          merge_vars
-				email_type          email_type
-				double_optin        double_optin
-				update_existing     update_existing
-				replace_interests   replace_interests
-				send_welcome        send_welcome
-				/
-			},
-			default => {
-				update_existing => 1,
-			},
-		},
-		listUpdateMember => {
-			parameters => {qw/
-				method               method
-				id                   id
-				email_address        email_address
-				merge_vars           merge_vars
-				email_type           email_type
-				replace_interests    replace_interests
-				/
-			},
-			default => {
-				replace_interests => 1,
-			},
-		},
-		listUnsubscribe => {
-			parameters => {qw/
-				method          method
-				id              id
-				email_address   email_address
-				delete_member   delete_member
-				send_goodbye    send_goodbye
-				send_notify     send_notify
-				/
-			},
-			default => {
-				send_goodbye => 1,
-				send_notify => 1,
+			orders => {
+				cid => q{},
+				start => 0,
+				limit => 100,
+				since => q{},
 			},
 		},
 		lists => {
-			parameters => {qw/
-				method    method
-				filters   filters
-				start     start
-				limit     limit
-				/
+			list => {
+				filters => {
+					list_id => q{},
+					list_name => q{},
+					from_name => q{},
+					from_email => q{},
+					from_subject => q{},
+					created_before => q{},
+					created_after => q{},
+					exact => 1,
+				},
+				start => 0,
+				limit => 25,
+				sort_field => q{},
+				sort_dir => q{DESC},
 			},
+			'member-info' => {
+				id => q{},
+				emails => [
+					{
+						email => q{},
+						euid => q{},
+						leid => q{},
+					},
+				],
+			},
+			members => {
+				id => q{},
+				status => q{subscribed},
+				opts => {
+					start => 0,
+					limit => 25,
+					sort_field => q{},
+					sort_dir => q{ASC},
+					segment => {
+					},
+				},
+			},
+			'merge-vars' => {
+				id => [
+				],
+			},
+			subscribe => {
+				id => q{},
+				email => {
+					email => q{},
+					euid => q{},
+					leid => q{},
+				},
+				merge_vars => {
+					'new-email' => q{},
+					groupings => [
+						{
+							id => q{},
+							name => q{},
+							groups => [ {} ],
+						}
+					],
+					optin_ip => q{},
+					optin_time => q{},
+					mc_location => {
+						latitude => q{},
+						longitude => q{},
+						anything => q{},
+					},
+					mc_language => q{},
+					mc_notes => [
+						{
+							note => q{},
+							id => q{},
+							action => q{},
+						},
+					],
+				},
+				email_type => q{html},
+				double_optin => 1,
+				update_existing => 0,
+				replace_interests => 1,
+				send_welcome => 0,
+			},
+			unsubscribe => {
+				id => q{},
+				email => {
+					email => q{},
+					euid => q{},
+					leid => q{},
+				},
+				delete_member => 0,
+				send_goodbye => 1,
+				send_notify => 1,
+			},
+## can't get merge_vars working for update-member method.
+#			'update-member' => {
+#				id => q{},
+#				email => {
+#					email => q{},
+#					euid => q{},
+#					leid => q{},
+#				},
+#				merge_vars => [ {} ],
+#				email_type => q{},
+#				replace_interests => 1,
+#			},
 		},
 	);
-	my ($log, $die, $warn) = $Tag->logger($opt->{logname} || 'mailchimp', $opt->{logfile} || 'logs/mailchimp.log');
+#print Dumper(\%api);
 
-	my $struct = $func{$func}
-		or return $die->('Unsupported method');
-	
-	my $parm = $struct->{parameters}
-		or return $die->('Bad function %s', $func);
-	my $def = $struct->{default} || {};
+	my ($section, $call) = split '/', $method;
 
-	my %arg;
-	while( my ($k, $v) = each %$parm) {
-		my $val = $opt->{$v};
-		if(! length($val) and $def->{$k}) {
-			$val = $default->($def->{$k}, $val);
+	my $struct = $api{$section}{$call}
+		or return $die->('Unsupported method: %s', $method);
+
+	## add merge_vars to struct:
+	if ($opt->{merge_vars}) {
+		while (my ($k,$v) = each %{$opt->{merge_vars}} ) {
+			$struct->{merge_vars}{$k} = $v if $call eq 'subscribe';
+			$struct->{merge_vars}[0]{$k} = $v if $call eq 'update-member';
 		}
-		if($k =~ /merge_vars/ and length($val)) {
-			for(keys %$val) {
-				$arg{'merge_vars[' . uc $_ . ']'} = $val->{$_};
+	}
+
+#$log->("struct is: " . ::uneval($struct) );
+#$log->("opt is: " . uneval($opt) );
+
+	## legacy support:
+	if (my $email = $opt->{email_address} and $call eq 'subscribe') {
+		$opt->{email}{email} = $email;
+	}
+	
+	while (my ($k,$v) = each %$struct) {    # struct should be a hash. Step through and set from the passed $opt values.
+		my $passed = $opt->{$k} || '';
+		unless ($passed) {
+			delete $struct->{$k};
+			next;
+		}
+		if (ref $v eq 'HASH') {   # step through the next level.
+			while (my ($subk, $subv) = each %$v) {
+				my $sub_passed = $opt->{$k}{$subk} || '';
+				unless ($sub_passed) {
+					delete $struct->{$k}{$subk};
+					next;
+				}
+				$struct->{$k}{$subk} = $sub_passed;
+			}
+			delete $struct->{$k} unless keys %$v;   # after while(), remove parent key if nothing inside
+		}
+		elsif (ref $v eq 'ARRAY') {
+			if (ref $v->[0] eq 'HASH') {   # array has (we presume) a single-element: a hash
+				while (my ($subk, $subv) = each %{$v->[0]} ) {
+					my $sub_passed = $opt->{$k}{$subk} || '';
+					unless ($sub_passed) {
+						delete $struct->{$k}[0]{$subk};
+						next;
+					}
+					$struct->{$k}[0]{$subk} = $sub_passed;
+				}
+			}
+			else {   # must be an array of strings
+				my $sub_passed = $opt->{$k} || '';
+				$struct->{$k} = $sub_passed;
 			}
 		}
 		else {
-			$arg{$k} = $val if length($val);
+			$struct->{$k} = $passed;
 		}
 	}
-my @merge_args = map { $_ =~ s/^merge_vars// ? ($_ .'='. $arg{"merge_vars$_"}) : '' } keys %arg;
-@merge_args = grep { /\S/ } @merge_args;
 
-	my $api_key = $::Variable->{MAILCHIMP_API_KEY};
-	my $dash = rindex($api_key, '-');
-	my $datacenter = $dash ? substr($api_key, ($dash+1)) : 'us1';
-	my $sec = $opt->{secure} =~ /^0|no/ ? '' : 's';
-	my $api_url = 'http' . $sec . '://' . $datacenter . '.api.mailchimp.com/1.3/';
+#$log->("struct is now: " . ::uneval($struct) );
+
+	$struct->{apikey} = $::Variable->{MAILCHIMP_API_KEY}
+		or return $die->("No API key");
+	my $dash       = rindex($struct->{apikey}, '-');
+	my $datacenter = $dash ? substr($struct->{apikey}, ($dash+1)) : 'us1';
 	my $output_fmt = $opt->{output} || 'json';
+	my $api_url    = qq{https://$datacenter.api.mailchimp.com/2.0/$section/$call.$output_fmt};
 
-	$arg{apikey} = $api_key;
+	my $json = encode_json($struct);
+#$log->("json: " . $json);
 
-	my $ua = LWP::UserAgent->new( timeout => $opt->{timeout} || 5, agent => $opt->{agent} || 'Interchange' );
+	my $req = HTTP::Request->new(POST => $api_url);
+	$req->content_type('application/json');
+	$req->content($json);
 
-#$log->("args are: " . ::uneval(\%arg));
-	my $response = $ua->post($api_url . '?method=' . $arg{method}, \%arg);
-#return ::uneval(%$response);  # for testing
+	my $ua = LWP::UserAgent->new( timeout => $opt->{timeout} || 15, agent => 'Interchange' );
+	my $res = $ua->request($req);
 
-	my $out;
-	if ($response->is_success) {
-		$out = $response->content;
+#return ::uneval(%$res);  # for testing
+
+	my $out = $res->content;
+	   $out = decode_json($out);
+
+	if ($res->is_success) {
+$log->("performed $method. response: " . uneval($out) );
+		return $opt->{hide}
+				? $log->("json was: $json")
+				: ::uneval($out) . "\njson was: $json"
+			;
 	}
-	if(!$out or $out =~ /error/) {
-		return $opt->{hide} ? $log->($out) : $die->($out);
+	else {
+		my $err = "Code: $out->{code}, $out->{name}. $out->{error}" . "\njson was: $json";
+		return $opt->{hide} ? $log->($err) : $die->($err);
 	}
-$log->("performed $arg{method} on $arg{email_address}. response: $out, merge_vars: " . join ', ', @merge_args);
-
-	$out = ::uneval(decode_json($out)) if ref($out) eq 'HASH';
-	return $opt->{hide} ? '' : $out;
 }
 EOR
 UserTag mailchimp Documentation <<EOD
 
 =head1 NAME
 
-mailchimp -- interact with MailChimp API v1.3
+mailchimp -- interact with MailChimp API v2.0
 
 =head1 DESCRIPTION
 
 Read the code to see what actions it supports explicity. API docs are here:
+L<http://apidocs.mailchimp.com/api/2.0/>
 
-	http://apidocs.mailchimp.com/api/1.3/
+More actions may be defined by altering the %api hash. Not all actions may work, even if defined.
 
-It only uses JSON output at this point.
+It only handles JSON output at this point.
 
-*** We are no longer setting the fname and lname from Values space.
+=head1 USAGE
 
-Usage:
+Examples:
 
 =over 4
 
-[mailchimp method=listSubscribe id="" email_address=""]
+[mailchimp method="lists/list"]
 
-Add a new variable to C<CATROOT/products/variable.txt>:
+[mailchimp method="lists/members" id="123abc"]
+
+[mailchimp method="lists/member-info" id="123abc" emails.email="foo@bar.com"]
+
+[mailchimp method="lists/subscribe" id="123abc" email-address="foo@bar.com"]
+
+[mailchimp method="lists/subscribe" id="123abc" email.email="foo@bar.com" merge_vars.fname="Foo" update-existing=1]
+
+(B<lists/subscribe> will translate the email-address option to email.email)
+
+=back
+
+Add a new variable to F<CATROOT/products/variable.txt>:
 
 	MAILCHIMP_API_KEY
 
 and set to the value of the API key you generate here:
+L<https://admin.mailchimp.com/account/api>
 
-	<https://admin.mailchimp.com/account/api>
+To call from Perl, you must use global=1, and structure like so:
 
-=back
+	[perl global=1]
+		my $res = $Tag->mailchimp({
+			method => 'lists/subscribe',
+			id => '123abc',
+			email => {
+				email => 'foo@bar.com',
+			},
+			merge_vars => {
+				fname    => 'Sum',
+				lname    => 'Gui',
+			},
+			send_welcome => 0,
+		});
+		return $res;
+	[/perl]
 
 =head1 PREREQUISITES
 
 logger.tag,
 LWP::UserAgent,
 JSON
+
+=head1 MERGE VARS
 
 If you want to use ITL in references for your merge_vars, such as:
 
@@ -209,25 +365,10 @@ Then you need to surround the [mailchimp] tag with a pragma, like so:
 	[mailchimp ... merge_vars.optin_ip="[data session host]"]
 	[tag pragma interpolate_itl_references]0[/tag]
 
-merge_vars can be found in your list's merge tags, and are automatically
-uppercased by this tag. You can also use merge_vars found in the API
-documentation (link above).
-
-To call from Perl, you must use global=1, and structure like so:
-
-	[perl global=1]
-		my $chimp = $Tag->mailchimp({
-			method => 'listSubscribe',
-			id => '123abc',
-			email_address => 'foo@bar.com',
-			merge_vars => {
-				fname    => 'Sum',
-				lname    => 'Gui',
-			},
-			send_welcome => 0,
-		});
-		return;
-	[/perl]
+merge_vars can be found in your list's merge tags, or via the B<lists/merge-vars>
+method. You apparently don't have to send them in all uppercase.
+You can also use the special merge_vars keys found in the API
+documentation for B<lists/subscribe> (link above).
 
 =head1 BUGS
 
@@ -235,13 +376,14 @@ The usual number.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2012 Josh Lavin. All rights reserved.
+Copyright (C) 2012-2014 Josh Lavin. All rights reserved.
 
 This usertag is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Josh Lavin
+Josh Lavin -- Perusion
 
+=cut
 EOD
