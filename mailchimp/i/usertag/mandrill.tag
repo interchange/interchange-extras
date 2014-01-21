@@ -49,7 +49,8 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 		merge => q{},
 		global_merge_vars => q{},
 		merge_vars => q{},
-		tags => q{},
+		tags => [
+		],
 		subaccount => q{},
 		google_analytics_domain => q{},
 		google_analytics_campaign => q{},
@@ -66,7 +67,7 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 				ip_pool => q{},
 				send_at => q{},
 			},
-			send_template => {
+			'send-template' => {
 				template_name => q{},
 				template_content => q{},
 				message => \%message,
@@ -89,7 +90,8 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 	my $struct = $api{$category}{$call}
 		or return $die->('Unsupported method: %s', $method);
 
-#$log->("struct is: " . uneval($struct) );
+#$log->("struct is: " . ::uneval($struct) );
+#$log->("opt is: " . uneval($opt) );
 
 	while (my ($k,$v) = each %$struct) {   # struct should be a hash. Step through and set from the passed $opt values.
 		my $passed = $opt->{$k} || '';
@@ -107,6 +109,23 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 				if (ref $subv eq 'HASH') {
 					## do anything more here?
 					$struct->{$k}{$subk} = $sub_passed;
+				}
+				elsif (ref $subv eq 'ARRAY') {
+					if (ref $subv->[0] eq 'HASH') {   # array has (we presume) a single-element: a hash
+						while (my ($subsubk, $subsubv) = each %{$subv->[0]} ) {
+							my $subsub_passed = $opt->{$k}{$subk}[0]{$subsubk} || '';
+							unless ($subsub_passed) {
+								delete $struct->{$k}{$subk}[0]{$subsubk};
+								next;
+							}
+							$struct->{$k}{$subk}[0]{$subsubk} = $subsub_passed;
+						}
+						delete $struct->{$k}{$subk} unless keys %{$subv->[0]};   # after while(), remove parent key if nothing inside
+					}
+					else {   # must be an array of strings
+						my $subsub_passed = $opt->{$k}{$subk}[0] || '';
+						$struct->{$k}{$subk}[0] = $subsub_passed;
+					}
 				}
 				else {
 					$struct->{$k}{$subk} = $sub_passed;

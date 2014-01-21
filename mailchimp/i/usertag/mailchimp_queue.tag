@@ -4,6 +4,7 @@ sub {
 		or die 'no mailchimp_queue table';
 
 	use vars qw/$Tag $ready_safe/;
+	my ($log, $die, $warn) = $Tag->logger('mailchimp_queue', 'logs/mailchimp_queue.log');
 	my @out;
 
 ## MailChimp:
@@ -14,7 +15,7 @@ sub {
 		delete $opt->{hide};
 		my $res = $Tag->mailchimp( $q->{method}, $opt );
 		$qdb->set_field($q->{code}, 'processed', 1) if $res;
-		push @out, $res;
+$log->("mailchimp: $res") if $res;
 	}
 
 ## Mandrill:
@@ -25,7 +26,7 @@ sub {
 		delete $opt->{hide};
 		my $res = $Tag->mandrill( $q->{method}, $opt );
 		$qdb->set_field($q->{code}, 'processed', 1) if $res;
-		push @out, $res;
+$log->("mandrill: $res") if $res;
 	}
 
 ## delete:
@@ -35,10 +36,10 @@ sub {
 		my $i = 0;
 		for (@$del_ary) {
 			$i++;
-			push @out, "Deleted $i old records.";
+$log->("Deleted $i old records.");
 		}
 	}
 
-	return join "\n", @out;
+	return;
 }
 EOR
