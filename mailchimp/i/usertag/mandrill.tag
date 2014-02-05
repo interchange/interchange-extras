@@ -52,7 +52,8 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 		tags => [
 		],
 		subaccount => q{},
-		google_analytics_domain => q{},
+		google_analytics_domains => [
+		],
 		google_analytics_campaign => q{},
 		metadata => q{},
 		recipient_metadata => q{},

@@ -208,20 +208,20 @@ $log->("queued $method, opts were: " . uneval($opt) );
 #$log->("opt is: " . uneval($opt) );
 
 	## legacy support:
-	if (my $email = $opt->{email_address} and $call eq 'subscribe') {
+	if (my $email = $opt->{email_address} and $call =~ /subscribe$/) {
 		$opt->{email}{email} = $email;
 	}
 	
 	while (my ($k,$v) = each %$struct) {    # struct should be a hash. Step through and set from the passed $opt values.
-		my $passed = $opt->{$k} || '';
-		unless ($passed) {
+		my $passed = defined $opt->{$k} ? $opt->{$k} : undef;
+		unless (defined $passed) {
 			delete $struct->{$k};
 			next;
 		}
 		if (ref $v eq 'HASH') {   # step through the next level.
 			while (my ($subk, $subv) = each %$v) {
-				my $sub_passed = $opt->{$k}{$subk} || '';
-				unless ($sub_passed) {
+				my $sub_passed = defined $opt->{$k}{$subk} ? $opt->{$k}{$subk} : undef;
+				unless (defined $sub_passed) {
 					delete $struct->{$k}{$subk};
 					next;
 				}
@@ -232,8 +232,8 @@ $log->("queued $method, opts were: " . uneval($opt) );
 		elsif (ref $v eq 'ARRAY') {
 			if (ref $v->[0] eq 'HASH') {   # array has (we presume) a single-element: a hash
 				while (my ($subk, $subv) = each %{$v->[0]} ) {
-					my $sub_passed = $opt->{$k}{$subk} || '';
-					unless ($sub_passed) {
+					my $sub_passed = defined $opt->{$k}{$subk} ? $opt->{$k}{$subk} : undef;
+					unless (defined $sub_passed) {
 						delete $struct->{$k}[0]{$subk};
 						next;
 					}
@@ -241,7 +241,7 @@ $log->("queued $method, opts were: " . uneval($opt) );
 				}
 			}
 			else {   # must be an array of strings
-				my $sub_passed = $opt->{$k} || '';
+				my $sub_passed = defined $opt->{$k} ? $opt->{$k} : undef;
 				$struct->{$k} = $sub_passed;
 			}
 		}
@@ -318,7 +318,7 @@ Examples:
 
 [mailchimp method="lists/subscribe" id="123abc" email.email="foo@bar.com" merge_vars.fname="Foo" update-existing=1]
 
-(B<lists/subscribe> will translate the email-address option to email.email)
+(B<lists/subscribe> and B<lists/unsubscribe> will translate the email-address option to email.email)
 
 =back
 
@@ -364,6 +364,10 @@ Then you need to surround the [mailchimp] tag with a pragma, like so:
 	[tag pragma interpolate_itl_references]1[/tag]
 	[mailchimp ... merge_vars.optin_ip="[data session host]"]
 	[tag pragma interpolate_itl_references]0[/tag]
+
+You cannot apparently use things like "[time]%Y%m%d[/time]" as a
+merge_var. The [either] tag appears to work fine, though. Be sure to
+test to ensure it is getting interpolated.
 
 merge_vars can be found in your list's merge tags, or via the B<lists/merge-vars>
 method. You apparently don't have to send them in all uppercase.
