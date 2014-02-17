@@ -72,7 +72,7 @@ sub {
 						       ],
 				headers     => [ \%ext ],
 				bcc_address => $bcc,
-				tags => $opt->{tags},
+				tags => $opt->{tags} || [],
 			},
 			queue => $opt->{queue},
 		});

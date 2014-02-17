@@ -14,7 +14,7 @@ sub {
 		my $qdb = dbref('mailchimp_queue')
 			or return $die->('no queue table');
 		$qdb->set_slice(undef, { method => $method, opt => uneval($opt), type => 'mandrill' });
-$log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
+		$log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 		return $opt->{hide} ? undef : 1;
 	}
 
@@ -32,7 +32,7 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 				type => q{},
 			},
 		],
-		headers => [ {} ],
+		headers => [ {} ], ## This is an array of hashes, i.e. [ { foo=>'bar'} ]
 		important => q{},
 		track_opens => q{},   # true by default, but can be changed via "Sending Options" in Mandrill
 		track_clicks => q{},  # true by default for HTML mail, but can be changed via "Sending Options" in Mandrill
@@ -94,50 +94,44 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 #$log->("struct is: " . ::uneval($struct) );
 #$log->("opt is: " . uneval($opt) );
 
-	while (my ($k,$v) = each %$struct) {   # struct should be a hash. Step through and set from the passed $opt values.
-		my $passed = $opt->{$k} || '';
-		unless ($passed) {
-			delete $struct->{$k};
-			next;
+	 sub grok_api {
+		my ($s, $o) = @_;
+
+		my $rt = ref $s;
+		unless(ref $o eq $rt) {
+			return $die->("oops, mismatched reference type, s=%s, o=%o", uneval($s), uneval($o));
 		}
-		if (ref $v eq 'HASH') {   # step through the next level.
-			while (my ($subk, $subv) = each %$v) {
-				my $sub_passed = $opt->{$k}{$subk} || '';
-				unless ($sub_passed) {
-					delete $struct->{$k}{$subk};
-					next;
-				}
-				if (ref $subv eq 'HASH') {
-					## do anything more here?
-					$struct->{$k}{$subk} = $sub_passed;
-				}
-				elsif (ref $subv eq 'ARRAY') {
-					if (ref $subv->[0] eq 'HASH') {   # array has (we presume) a single-element: a hash
-						while (my ($subsubk, $subsubv) = each %{$subv->[0]} ) {
-							my $subsub_passed = $opt->{$k}{$subk}[0]{$subsubk} || '';
-							unless ($subsub_passed) {
-								delete $struct->{$k}{$subk}[0]{$subsubk};
-								next;
-							}
-							$struct->{$k}{$subk}[0]{$subsubk} = $subsub_passed;
-						}
-						delete $struct->{$k}{$subk} unless keys %{$subv->[0]};   # after while(), remove parent key if nothing inside
-					}
-					else {   # must be an array of strings
-						my $subsub_passed = $opt->{$k}{$subk}[0] || '';
-						$struct->{$k}{$subk}[0] = $subsub_passed;
-					}
-				}
-				else {
-					$struct->{$k}{$subk} = $sub_passed;
-				}
+
+		if ($rt eq 'HASH') {
+			for my $k (keys %$o) {
+				next unless $k =~ /[A-Za-z]/;
+				next unless exists $s->{$k};
+				my $v = grok_api($s->{$k}, $o->{$k});
+				next unless defined $v and length $v;
+				$o->{$k} = $v;
 			}
+			for(keys %$o) {
+				delete $o->{$_} unless defined $o->{$_};
+			}
+			return unless scalar(keys %$o);
+			return $o;
+		}
+		elsif ($rt eq 'ARRAY') {
+			for (my $y=0; $y <= $#{$s}; $y++) {
+				$o->[$y] = grok_api($s->[$y], $o->[$y]);
+			}
+			for(my $i = $#$o; $i >= 0; $i--) {
+				pop @$o unless $o->[$i];
+			}
+			return unless scalar(@$o);
+			return $o;
 		}
 		else {
-			$struct->{$k} = $passed;
+			return $o if defined $o;
 		}
-	}
+	};
 
+	$struct = grok_api($struct, $opt);
 #$log->("struct is now: " . ::uneval($struct) );
 
 	my $output_fmt = $opt->{output} || 'json';
@@ -161,7 +155,7 @@ $log->("queued $method, opt-message-to: " . uneval($opt->{message}{to}) );
 	   $out = decode_json($out);
 
 	if ($res->is_success) {
-$log->("performed $method. response: " . uneval($out) );
+		$log->("performed $method. response: " . uneval($out) );
 		return $opt->{hide}
 				? $log->("json was: $json")
 				: ::uneval($out)
