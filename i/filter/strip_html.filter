@@ -1,9 +1,16 @@
 CodeDef strip_html Filter
 CodeDef strip_html Routine <<EOR
 sub {
-	my $val = shift;
+	my ($val, undef, $links) = @_;
+	if ($links eq 'keep_links') {
+		$val =~ s|<a.+href="(.*)".*>(.*)</a>|$2: _::_$1_::_|gi;
+	}
 	$val =~ s:<[/\w].*?\s?/?>: :gi;
 	$val =~ s:<!--.*-->::gi;
+	$val =~ s:&\w{4,6};::gi;
+	if ($links eq 'keep_links') {
+		$val =~ s|_::_(.*)_::_|<$1>|g;
+	}
 	return $val;
 }
 EOR
