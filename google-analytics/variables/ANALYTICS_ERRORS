@@ -6,6 +6,7 @@
 		my $err = $Session->{errors}{$_};
 		$err =~ s/'.*'/X/;  # remove user-submissions
 		$err =~ s/'/\'/g;
+		$err = $Tag->filter('e', $err);
 		s/'/\'/g;
 		push @out, sprintf( q{ga('send', 'event', 'Errors', '%s', '%s', undefined, {'noninteraction': 1});}, $_, $err );
 	}
