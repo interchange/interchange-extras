@@ -1,6 +1,9 @@
 Feel free to download these files and use in your project.
 
-The 'i' directory contains files for the Interchange server,
+Suggested use is to clone the entire repository, then copy files from
+sub-directories to your project as you want to use them.
+
+The 'i' directories contain files for the Interchange server,
 located at /usr/local/interchange, or wherever your server lives.
 
 Provided by Perusion, http://www.perusion.com

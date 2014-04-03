@@ -1,0 +1,1 @@
+search_fail	table																			{'panel_shade' => "f",'ui_sort_field' => "count",'display_type' => "   image_meta",'ui_sort_option' => "n r",'ui_sort_combined' => "count:r, last_modified:r",'ui_more_decade' => "10",}

@@ -1,0 +1,17 @@
+[tmp tmp_spec][value-extended name=mv_searchspec index=0][/tmp]
+
+[no-match]
+	[perl tables="search_fail"]
+		## log failed searches - see table in Admin
+		my $spec = $Scratch->{tmp_spec};
+		return unless $spec;
+		my $fdb = $Db{search_fail};
+		my $exists = $fdb->record_exists($spec);
+		my $res = $exists ? $fdb->inc_field($spec, 'count', 1) : $fdb->set_field($spec, 'count', 1);
+		return;
+	[/perl]
+	[if scratch tmp_spec]
+		<p>[msg arg.0="[scratch tmp_spec]"]Sorry, no matches for <b>%s</b>.[/msg]</p>
+	[/if]
+</div>
+[/no-match]

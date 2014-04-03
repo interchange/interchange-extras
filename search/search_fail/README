@@ -1,0 +1,9 @@
+Log failed search to a database table.
+
+The mv_metadata snippet will sort the table with the most popular
+failures first.
+
+For failures that are misspelled items on your site, you could add a
+"search_terms" field to your products table, and then enter any failures
+with their corresponding item. You will then need to modify your search
+forms to query this field along with your existing mv_search_field.

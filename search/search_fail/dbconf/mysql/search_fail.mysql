@@ -1,0 +1,7 @@
+Database  search_fail  search_fail.txt  __SQLDSN__
+Database  search_fail  COLUMN_DEF  "term=varchar(64) NOT NULL PRIMARY KEY"
+Database  search_fail  COLUMN_DEF  "count=int NOT NULL DEFAULT '0'"
+Database  search_fail  COLUMN_DEF  "last_modified=timestamp"
+Database  search_fail  CREATE_EMTPY_TXT  1
+Database  search_fail  NAME        term count last_modified
+NoImport search_fail
