@@ -1,0 +1,25 @@
+These files provide support for a separate mobile template. You can make
+great gains with responsive design, but it doesn't solve all the issues,
+namely mobile-friendly checkout pages.
+
+
+Create a "pages/m/" directory, and add to it the mobile versions of your
+pages, if they have different HTML than the corresponding page in the
+pages/ dir.
+
+customize i/usertag/is_mobile.tag, if you want to redirect phones and
+tablets (default is only phones).
+
+Note that is_mobile expects to see a pages/m/flypage.html and
+pages/m/results.html, so you may need to alter the usertag if you don't
+use mobile-specifc pages for those.
+
+add to catalog.cfg:
+        Autoload [handle-mobile]
+
+add to regular templates (include/layout/leftonly and the like):
+        [is-mobile]
+        <div style="position:absolute;top:0;right:0;background:white;padding:.5em 1em;text-align:center;font-weight:bold">
+                <a href="[area href="[either][data session arg][or][cgi mv_nextpage][/either]" form=gomo=1]">Enter Mobile Site</a>
+        </div>
+        [/is-mobile]

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+
+<!-- your mobile template here -->
+
+{{TOP?}}
+	{{TOP}}
+{{/TOP?}}
+{{:DEFAULT}}
+
+{{BOTTOM?}}
+	{{BOTTOM}}
+{{/BOTTOM?}}
+
+<div data-role="footer">
+	[tmp nomo][if cgi mv_nextpage =~ /^m\/?$/]index[else][either][data session arg][or][cgi name=mv_nextpage filter='splitr.m/' keep=1][/either][/else][/if][/tmp]
+	<a href="[area href="[scratch nomo]" form=nomo=1]">Visit full website</a>
+</div>
+
+</body>
+</html>

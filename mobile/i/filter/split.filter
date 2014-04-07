@@ -1,0 +1,54 @@
+CodeDef split Filter
+CodeDef split Documentation <<EOD
+	
+	Find first occurence of separator and split strings.
+	Returns first string.
+	
+	Usage:
+	   [filter split.--]info--Order questions[/filter]
+	returns:
+	   info
+	
+EOD
+CodeDef split Routine <<EOR
+
+package Vend::Interpolate;
+
+sub {
+	my ($val, undef, $sep) = @_;
+#$val = "Foo (bar)";
+#$sep = " (";
+	$sep =~ s/([\!\$\(\)\*\+\.\/\:\=\?\[\\\]\^\{\|\}])/\\$1/g;
+#print $sep;
+	my ($keep, $discard) = split /$sep/, $val, 2;
+	$keep =~ s/\s+$//;
+#print $keep . "\n" . $discard;
+	return $keep;
+}
+EOR
+
+
+CodeDef splitr Filter
+CodeDef splitr Documentation <<EOD
+	
+	Find first occurence of separator and split strings.
+	Returns second string.
+	
+	Usage:
+	   [filter splitr.--]info--Order questions[/filter]
+	returns:
+	   Order questions
+	
+EOD
+CodeDef splitr Routine <<EOR
+
+package Vend::Interpolate;
+
+sub {
+	my ($val, undef, $sep) = @_;
+	$sep =~ s/([\!\$\(\)\*\+\.\/\:\=\?\[\\\]\^\{\|\}])/\\$1/g;
+	my ($discard, $keep) = split /$sep/, $val, 2;
+	$keep =~ s/^\s+//;
+	return $keep;
+}
+EOR
