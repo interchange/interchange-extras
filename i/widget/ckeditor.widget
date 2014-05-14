@@ -46,6 +46,10 @@ That means that routines can be accessed with a base HREF of C</ckeditor/>.
 
 This widget requires Interchange 5.0 and higher.
 
+To support file uploading, you must set in interchange.cfg:
+
+TolerateGet  yes
+
 If you are planning on using it outside of the Interchange UI, you must
 either have the output-style of layout (the "standard" demo) with a 
 [scratch meta_header] call in the <HEAD> area, or you must place the
@@ -84,6 +88,7 @@ sub {
 			filebrowserUploadUrl : '{FILEUPLOAD}'
 		}
 	);
+	{EXTRA}
 </script>|,
 
 	};
@@ -153,10 +158,12 @@ EOF
 EOF
 
 	my $image_dir = $option_hash{image_dir} || 'images/blog';
-	my $filebrowse = $Tag->area({ href => 'admin/ck_file_browse', form => "mask=$image_dir", });
-	my $filebrowse_img = $Tag->area({ href => 'admin/ck_file_browse', form => "mask=$image_dir&type=images&no_up=1", });
-	my $fileupload = $Tag->area({ href => 'process', form => "mv_todo=return&mv_nextpage=admin/ck_do_upload&ui_upload_fn=$image_dir&ui_upload_umask=022&not_img=1" });
-	my $fileupload_img = $Tag->area({ href => 'process', form => "mv_todo=return&mv_nextpage=admin/ck_do_upload&ui_upload_fn=$image_dir&ui_upload_umask=022" });
+	$opt->{filebrowse_page} ||= 'admin/ck_file_browse';
+	$opt->{fileupload_page} ||= 'admin/ck_do_upload';
+	my $filebrowse = $Tag->area({ href => $opt->{filebrowse_page}, form => "mask=$image_dir", });
+	my $filebrowse_img = $Tag->area({ href => $opt->{filebrowse_page}, form => "mask=$image_dir&type=images&no_up=1", });
+	my $fileupload = $Tag->area({ href => 'process', form => "mv_todo=return&mv_nextpage=$opt->{fileupload_page}&ui_upload_fn=$image_dir&ui_upload_umask=022&not_img=1" });
+	my $fileupload_img = $Tag->area({ href => 'process', form => "mv_todo=return&mv_nextpage=$opt->{fileupload_page}&ui_upload_fn=$image_dir&ui_upload_umask=022" });
 
 	$post_scr .= $Tag->uc_attr_list({hash => {
 												name => $pname,
@@ -168,6 +175,7 @@ EOF
 												filebrowse_img => $filebrowse_img,
 												fileupload => $fileupload,
 												fileupload_img => $fileupload_img,
+												extra => $opt->{extra},
 											}, body => $parms->{post}});
 #::logDebug("post:$post_scr");	
 	$opt->{anchor_style} ||= 'font-size: smaller';
