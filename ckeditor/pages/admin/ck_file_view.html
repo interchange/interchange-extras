@@ -1,0 +1,54 @@
+[set help_name]upload.main[/set]
+[set icon_name]icon_config.gif[/set]
+[set ui_class]Misc[/set]
+[set page_title][L]CK File Viewer[/L][/set]
+[set page_perm]files[/set]
+
+[tmpn display_class]type5[/tmpn]
+[calcn]
+	my $arg = $CGI->{mv_arg};
+	return unless $arg =~ m:^images:;
+	$arg =~ s:^images:$Variable->{IMAGE_DIR}:;
+	$CGI->{mv_arg} = $arg;
+	return;
+[/calcn]
+
+
+[tmp meta_header]
+<script>
+	// Helper function to get parameters from the query string.
+	function getUrlParam(paramName) {
+		var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
+		var match = window.location.search.match(reParam) ;
+		return (match && match.length > 1) ? match[1] : '' ;
+	}
+	function dofile() {
+		var funcNum = getUrlParam('CKEditorFuncNum');
+		var fileUrl = '[cgi mv_arg]';
+		window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);
+		self.close();
+	}
+</script>
+[/tmp]
+
+@_UI_STD_HEAD_@
+
+<div style="text-align:center;margin:1em 0">
+
+	<a href="javascript:dofile()">
+		[if cgi mv_arg =~ /(jpe?g|gif|png)/i]
+			<img title="Select: [cgi mv_arg]" src="[cgi mv_arg]">
+			<br>
+			Select
+		[else]
+			Select file: [cgi mv_arg]
+		[/else]
+		[/if]
+	</a>
+
+	<p>&nbsp;</p>
+	<a href="javascript:history.go(-1)">&larr; Back</a>
+
+</div>
+
+@_UI_STD_FOOTER_@

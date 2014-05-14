@@ -1,0 +1,51 @@
+@_UI_STD_INIT_@
+
+[calc]
+#Debug("upload value: $Values->{upload}");
+	my $image = $Values->{upload};
+#Debug("file: $image");
+	$image =~ s:.*[\\/]::;
+	$CGI->{ui_upload_fn} =~ s:(.)/?$:$1/:;
+	$CGI->{ui_upload_fn} .= $image;
+#Debug("ui_upload_fn: " . $CGI->{ui_upload_fn});
+	$Session->{ui_message} = sprintf ("[L]Uploaded file: %s[/L]", $image);
+	$Values->{ui_upload_fn} = $CGI->{ui_upload_fn};
+#Debug("ui_upload_fn value: " . $Values->{ui_upload_fn});
+	return;
+[/calc]
+
+[if-mm function="!files" name="[value ui_upload_fn]"]
+[tmp ui_error] [msg arg.0="[value ui_upload_fn]"]Not allowed to upload %s.[/msg][/tmp]
+[/if-mm]
+
+[if !value upload]
+[tmp ui_error] No file sent.[/tmp]
+[/if]
+
+[if type=explicit compare=|
+					[value-extended
+							Yes=1
+							umask="[cgi ui_upload_umask]"
+							No=0
+							ascii="[value ui_upload_ascii]"
+							name=upload
+							outfile="[value ui_upload_fn]"
+						]
+					|]
+[else]
+[tmp ui_error][msg arg.0="[value ui_upload_fn]"]Error writing file %s.[/msg][/tmp]
+[/else][/if]
+
+[calcn]
+	my $fn = $Values->{ui_upload_fn};
+	return unless $fn =~ m:^images:;
+	$fn =~ s:^images:$Variable->{IMAGE_DIR}:;
+	$Values->{ui_upload_fn} = $fn;
+	return;
+[/calcn]
+<script>
+	var funcNum = '[cgi CKEditorFuncNum]';
+	var fileUrl = '[if cgi not_img]__SAMPLEURL__[/if][value ui_upload_fn]';
+	var msg = '[scratch ui_error]';
+	window.parent.CKEDITOR.tools.callFunction(funcNum, fileUrl, msg);
+</script>

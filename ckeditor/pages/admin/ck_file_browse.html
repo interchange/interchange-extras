@@ -1,0 +1,35 @@
+[set help_name]upload.main[/set]
+[set icon_name]icon_config.gif[/set]
+[set ui_class]Misc[/set]
+[set page_title][L]CK File Browser[/L][/set]
+[set page_perm]files[/set]
+
+[tmpn display_class]type5[/tmpn]
+
+[tmp mask][/tmp]
+[tmp include_mask][if cgi type eq images]jpg gif GIF JPG jpeg JPEG png PNG[else]*[/else][/if][/tmp]
+[tmpn exclude_mask]gdbm db sql bak[/tmpn]
+
+@_UI_STD_HEAD_@
+
+<p>If you are uploading images, try to resize them to the size you need before you upload them.</p>
+
+<A HREF="[area href="admin/upload_file" arg="[either][cgi mask][or][cgi dir][/either]/" form="ui_return_to=@@MV_PAGE@@&ui_upload_binary=1"]"><img src="up.gif" align=center height=22 width=20>(new file)</A><BR>
+
+<table width="100%">
+[table-organize columns=3 columnize=1 min-rows=15 interpolate=1]
+	[file-navigator
+		mask="[scratch mask]"
+		include_mask="[scratch include_mask]"
+		exclude_mask="[scratch exclude_mask]"
+		template=|<TD width="33%">%s</TD>|
+		view_href="admin/ck_file_view"
+		view_form="mv_arg=~FN~&CKEditorFuncNum=[cgi CKEditorFuncNum]"
+		initial_dir="[cgi mask]"
+		no_new_file=1
+		no_up="[cgi no_up]"
+	]
+[/table-organize]
+</table>
+
+@_UI_STD_FOOTER_@
