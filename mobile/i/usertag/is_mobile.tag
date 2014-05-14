@@ -1,7 +1,9 @@
 UserTag is_mobile hasEndTag
+UserTag is_mobile Order reverse
 UserTag is_mobile Routine <<EOR
 use HTTP::BrowserDetect;
 sub {
+	my $rev = shift;
 	if(! defined $Vend::Session->{phone_browser}) {
 		my $ua = HTTP::BrowserDetect->new($Vend::Session->{browser});
 		if ($ua->tablet()) {
@@ -15,7 +17,10 @@ sub {
 		}
 	}
 
-	return $Vend::Session->{phone_browser} ? Vend::Interpolate::pull_if(shift (@_))  : Vend::Interpolate::pull_else(shift (@_) );
+	my $truth = $Vend::Session->{phone_browser};
+	$rev and $truth = ! $truth;
+	
+	return $truth ? Vend::Interpolate::pull_if(shift (@_))  : Vend::Interpolate::pull_else(shift (@_) );
 }
 EOR
 
