@@ -1,0 +1,51 @@
+Highlight the search keyword on results pages
+
+I believe the original jQuery plugin was obtained from:
+http://www.jquery.info/The-plugin-SearchHighlight
+
+Requires jQuery.
+
+The initial search results page (typically pages/results.html)
+displays links to the flypages with matching content. Alter these
+links to include the "form" parameter below:
+
+	[area ... form='s=[value-extended name=mv_searchspec]']
+
+Then, in pages/flypage.html, add something like what is included in
+flypage.html.snip.
+
+    (Your template may or may not have meta_header and meta_footer
+    output sections [the Strap template does].)
+
+Alter the .searchlight style to your liking.
+
+Configure the options block in Javascript to your needs. You can use
+these parameters:
+
+    - exact: one of:
+        - 'exact' (highlights the word only if it exactly matches)
+        - 'whole' (highlights all the words even if there is a partial match)
+        - 'partial' (highlights only the part of the word that matches)
+
+    - style_name: The class of the span element that wraps the words to
+      be highlighted.
+
+    - style_name_suffix (boolean, default value:true) 
+        - True indicates that each style will be incremented with a
+          number. (hilite1, highlite2, hilite3...) This is useful to
+          find specific matches and style them differently.
+
+    - highlight (jQuery selector or object, default value:null) 
+        - Use this option to limit the Highlighting to a specific area
+          of the page. Null is the entire document. If no elements are
+          found the plugin consider the entire document as well.
+
+    - nohighlight (jQuery selector or object, default value:null) 
+        - Use this option to exclude the Highlighting from a specific
+          area of the page. It has priority on the highlight option.
+
+    - keys (string, default value:null) 
+        - Allows to explicitly set the words to be searched for, while
+          disabling all the tests against the referrer. Useful to
+          disable search engines highlight and to highlight words
+          extracted from page url or from the DOM.

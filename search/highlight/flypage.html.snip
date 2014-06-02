@@ -1,0 +1,23 @@
+[if cgi s]
+	[tmp meta_header]
+		[scratch meta_header]
+		<style>
+			.searchlight { background: yellow }
+		</style>
+	[/tmp]
+	[tmp meta_footer]
+		<script src="/PATH/TO/YOUR/JAVASCRIPT/SearchHighlight.pack.js"></script>
+		<script>
+			var options = {
+				exact:"partial",
+				style_name:'searchlight',
+				style_name_suffix:false,
+				highlight:'#main',
+				keys:'[cgi name=s filter=e]'
+			};
+			jQuery(function(){
+				jQuery(document).SearchHighlight(options);
+			});
+		</script>
+	[/tmp]
+[/if]
