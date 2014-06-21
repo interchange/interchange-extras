@@ -1,3 +1,16 @@
+Redirects
+---------
+
+Allows for easy entry of redirects, via the Tables tab in the Admin.
+This can be used for redirecting from one page to another, from one
+product to another, or even for short-URLs
+(e.g. www.foo.com/gc --> www.foo.com/Gift-Certificates).
+
+The old link _must_ no longer exist for this to work. That means the
+file is removed from disk if a page, or the product is deleted from the
+products table if a product.
+
+
 Install these files in their appropriate directories:
 
 	dbconf/mysql/redirects.mysql
