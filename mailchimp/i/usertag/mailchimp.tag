@@ -126,6 +126,10 @@ $log->("queued $method, opts were: " . uneval($opt) );
 				id => [
 				],
 			},
+			segments => {
+				id => q{},
+				type => q{},  # 'static' or 'saved'
+			},
 			subscribe => {
 				id => q{},
 				email => {

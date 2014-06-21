@@ -5,6 +5,6 @@ Database  mailchimp_queue  COLUMN_DEF  "opt=text NOT NULL"
 Database  mailchimp_queue  COLUMN_DEF  "type=varchar(32) NOT NULL DEFAULT 'mailchimp'"
 Database  mailchimp_queue  COLUMN_DEF  "processed=int NOT NULL DEFAULT 0"
 Database  mailchimp_queue  COLUMN_DEF  "last_modified=timestamp"
-Database  mailchimp_queue  CREATE_EMTPY_TXT  1
+Database  mailchimp_queue  CREATE_EMPTY_TXT  1
 Database  mailchimp_queue  NAME        code method opt type processed last_modified
-NoImport mailchimp_queue
+#NoImport mailchimp_queue
