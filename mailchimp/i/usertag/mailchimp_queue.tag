@@ -5,7 +5,6 @@ sub {
 
 	use vars qw/$Tag $ready_safe/;
 	my ($log, $die, $warn) = $Tag->logger('mailchimp_queue', 'logs/mailchimp_queue.log');
-	my @out;
 
 ## MailChimp:
 	my $mcq = q{SELECT * FROM mailchimp_queue WHERE processed = 0 AND type = 'mailchimp'};
