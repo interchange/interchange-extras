@@ -1,0 +1,18 @@
+Ctags generates an index (or tag) file of language objects found in source files that allows these items to be quickly and easily located by a text editor or other utility. A tag signifies a language object for which an index entry is available (or, alternatively, the index entry created for that object). 
+
+1. Install exuberant-ctags
+	http://ctags.sourceforge.net/
+
+2. 'cd' to your Interchange installation (e.g. /usr/local/interchange)
+
+3. Run:
+
+	ctags -R --exclude='*.js'
+
+4. Use with Vi:
+
+		vi -t tag		Start vi and position the cursor at the file and line where "tag" is defined.
+		:ta tag 		Find a tag.
+		Ctrl-] 			Find the tag under the cursor.
+		Ctrl-T 			Return to previous location before jump to tag (not widely implemented).
+
