@@ -31,13 +31,7 @@ $log->("mandrill: $res") if $res;
 ## delete:
 	my $week_ago = $Tag->time({ fmt => '%Y-%m-%d', adjust => '-1 week' });
 	my $del_ary = $qdb->query("DELETE FROM mailchimp_queue WHERE processed = 1 AND last_modified < '$week_ago'");
-	if ($del_ary) {
-		my $i = 0;
-		for (@$del_ary) {
-			$i++;
-$log->("Deleted $i old records.");
-		}
-	}
+$log->("Deleted $del_ary old records.") if $del_ary;
 
 	return;
 }
