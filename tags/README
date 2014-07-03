@@ -11,8 +11,8 @@ Ctags generates an index (or tag) file of language objects found in source files
 
 4. Use with Vi:
 
-		vi -t tag		Start vi and position the cursor at the file and line where "tag" is defined.
-		:ta tag 		Find a tag.
-		Ctrl-] 			Find the tag under the cursor.
-		Ctrl-T 			Return to previous location before jump to tag (not widely implemented).
+	vi -t tag	Start vi and position the cursor at the file and line where "tag" is defined.
+	:ta tag 	Find a tag.
+	Ctrl-] 		Find the tag under the cursor.
+	Ctrl-T 		Return to previous location before jump to tag (not widely implemented).
 
