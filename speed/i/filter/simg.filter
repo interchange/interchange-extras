@@ -1,0 +1,27 @@
+CodeDef simg Filter
+CodeDef simg Description Rewrite images (and links to images) contained in list tags to use CDN
+CodeDef simg Routine   <<EOR
+use Digest::MD5 qw(md5_hex);
+sub {
+	my $val = shift;
+	return $val if $CGI::secure;
+
+	my $server_pattern = $::Variable->{SIMG_SERVER_PATTERN} || 'http://img%s.mydomain.com';  ## change to your domain
+	my $num_hosts = 4;  ## change this to however many image hostnames you want to use
+
+	my $rew = sub {
+		my $src = shift;
+		my $md5 = md5_hex($src);
+		$md5 = substr($md5, 0, 1);
+		$md5 = hex($md5);
+		$md5 = $md5 % $num_hosts;
+		$md5++;
+		$src = sprintf("$server_pattern", $md5) . $src;
+		return $src;
+	};
+
+	$val =~ s{src="(?!http|//)(?!/images/)}{src="/images/}g;  # add /images/ in front, if not there
+	$val =~ s{(href|src)="(?!http|//)(\S+\.\w{2,4})"}{$1.'="'.$rew->($2).'"'}ge;
+	return $val;
+}
+EOR
