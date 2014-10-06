@@ -1,7 +1,8 @@
 Feel free to download these files and use in your project.
 
-Suggested use is to clone the entire repository, then copy files from
-sub-directories to your project as you want to use them.
+Suggested use is to clone the entire repository to somewhere
+standalone such as /usr/local/src, then copy files from sub-directories
+to your project as you want to use them.
 
 The 'i' directories contain files for the Interchange server,
 located at /usr/local/interchange, or wherever your server lives.
