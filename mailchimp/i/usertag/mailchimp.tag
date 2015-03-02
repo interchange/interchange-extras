@@ -280,10 +280,15 @@ $log->("queued $method, opts were: " . uneval($opt) );
 
 	if ($res->is_success) {
 $log->("performed $method. response: " . uneval($out) );
-		return $opt->{hide}
-				? $log->("json was: $json")
-				: ::uneval($out) . "\njson was: $json"
-			;
+		if ($opt->{return_ref}) {
+			return $out;
+		}
+		else {
+			return $opt->{hide}
+					? $log->("json was: $json")
+					: ::uneval($out) . "\njson was: $json"
+				;
+		}
 	}
 	else {
 		my $err = "Code: $out->{code}, $out->{name}. $out->{error}" . "\njson was: $json";
