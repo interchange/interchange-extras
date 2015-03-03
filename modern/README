@@ -1,0 +1,11 @@
+Modern methods to develop for Interchange 5
+-------------------------------------------
+
+All files are intended to reside in your Interchange server directory.
+
+- replace External.pm (until this version makes it back to core IC)
+
+- Add to interchange.cfg and your catalog.cfg:
+
+	External yes
+
