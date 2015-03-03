@@ -1,0 +1,62 @@
+[perl table="bounced_emails"]
+	my ($log, $die, $warn) = $Tag->logger('mc_webhook', 'logs/mailchimp.log');
+
+	#return $die->('need good key') unless $CGI->{key} eq 'change-me';
+
+	my $type = $CGI->{type}
+		or return $die->('need type');
+
+	my $bdb = $Db{bounced_emails} or return $die->('no bounced_emails table found');
+
+	if($type eq 'subscribe') {
+		return $log->('type %s not yet handled', $type);
+	}
+	elsif($type eq 'unsubscribe') {
+		## "action" will either be "unsub" or "delete". The reason will be "manual" unless caused by a spam complaint - then it will be "abuse"
+		## just log these, since it doesn't make since to unsubscribe people from transactional emails
+		return $log->(
+				"email unsubscribed. email:%s, reason:%s",
+				$CGI->{"data[email]"},
+				$CGI->{"data[reason]"},
+			);
+	}
+	elsif($type eq 'cleaned') {
+		## this is when MailChimp cleans our list: http://eepurl.com/gY52
+		## reason will be one of "hard" (for hard bounces) or "abuse"
+		if($CGI->{"data[reason]"} eq 'hard') {
+			my %cols = ( bounce_type => 'hard', bounce_num => 1 );
+			$bdb->set_slice($CGI->{"data[email]"}, \%cols)
+				or return $die->("failed to set_slice for cleaning. email=%s, reason=hard", $CGI->{"data[email]"});
+		}
+		return $log->(
+				"email cleaned, but we ignore abuse. email:%s, reason:%s",
+				$CGI->{"data[email]"},
+				$CGI->{"data[reason]"},
+			);
+	}
+	elsif($type eq 'upemail') {
+		## do nothing, but log
+		return $log->(
+				'email updated. old: %s, new: %s',
+				$CGI->{"data[old_email]"},
+				$CGI->{"data[new_email]"},
+			);
+	}
+	elsif($type eq 'profile') {
+		## do nothing, but log
+		return $log->(
+				'profile updated. data[merges][EMAIL]:%s, data[merges][FNAME]:%s, data[merges][LNAME]:%s',
+				$CGI->{"data[merges][EMAIL]"},
+				$CGI->{"data[merges][FNAME]"},
+				$CGI->{"data[merges][LNAME]"},
+			);
+	}
+	elsif($type eq 'campaign') {
+		return $log->('type %s not yet handled', $type);
+	}
+	else {
+		return $die->('unknown type: %s', $type);
+	}
+
+	return;
+[/perl]
