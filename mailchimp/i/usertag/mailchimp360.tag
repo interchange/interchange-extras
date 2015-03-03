@@ -29,12 +29,24 @@ sub {
 		my $eid = $Tag->filter('encode_entities', $CGI::values{mc_eid});
 		$set->($cid_cookie_name, $cid);
 		$set->($eid_cookie_name, $eid);
+
+		## store in session, so cart_abandon can get at it later
+		$Session->{mailchimp_eid} = $eid; 
+
 		return;
 	}
 	elsif($opt->{order}) {
 		# move on
 	}
 	else {
+		## store in session if not already there.
+#::logDebug("mc360: nothing asked of us.");
+		if (! $Session->{mailchimp_eid}) {
+			my $eid = Vend::Util::read_cookie($eid_cookie_name);
+			$Session->{mailchimp_eid} = $eid if $eid; 
+#::logDebug("mc360: setting session for: $eid");
+		}
+
 		return;
 	}
 
