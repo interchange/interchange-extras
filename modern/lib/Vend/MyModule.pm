@@ -38,7 +38,6 @@ sub die {
 	my $fmt = shift;
 	my $msg = sprintf($fmt, @_);
 	if ($Vend::Cfg->{Database}) {
-		print "has global vendroot";
 		Vend::Tags->error({ name => $self->{error_name}, set => $msg });
 		::logError('died: ' . $msg, { file => $self->{logfile} });
 	}
@@ -67,29 +66,29 @@ sub _is_username {
 sub my_session_value {
 	## sample public function
 	my $self = shift;
-    my ($sid,$key) = @_;
-    my $fn = Vend::File::get_filename($sid,2,1,'session');
-    my @sess = grep $_ !~ /\.lock$/, glob("$fn*")
+	my ($sid,$key) = @_;
+	my $fn = Vend::File::get_filename($sid,2,1,'session');
+	my @sess = grep $_ !~ /\.lock$/, glob("$fn*")
 		or return;
 
-    ## Might add some error checking in case of multiple file return (though it is unlikely)
-    my $sfn = $sess[0];
+	## Might add some error checking in case of multiple file return (though it is unlikely)
+	my $sfn = $sess[0];
 
-    my $session = Vend::Util::eval_file($sfn);
+	my $session = Vend::Util::eval_file($sfn);
 
-    $key ||= 'values.email';
-    my (@levels) = split /\./, $key;
+	$key ||= 'values.email';
+	my (@levels) = split /\./, $key;
 
-    my $val = $session;
-    while (my $next = shift @levels) {
+	my $val = $session;
+	while (my $next = shift @levels) {
 		eval {
 			$val = $val->{$next};
 		};
 		if($@) {
 			$self->die("session-value: Bad session key '%s'", $key);
 		}
-    }
-    return $val;
+	}
+	return $val;
 }
 
 sub dbh {
