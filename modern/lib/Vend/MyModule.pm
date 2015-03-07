@@ -47,6 +47,20 @@ sub die {
 	return;
 }
 
+sub warn {
+	my $self = shift;
+	my $fmt = shift;
+	my $msg = sprintf($fmt, @_);
+	if ($Vend::Cfg->{Database}) {
+		Vend::Tags->warnings($msg);
+		::logError($msg, { file => $self->{logfile} });
+	}
+	else {
+		carp "warn: $msg";
+	}
+	return;
+}
+
 sub _is_username {
 	## sample private function
 	my $self = shift;
