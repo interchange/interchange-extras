@@ -8,12 +8,11 @@ use lib 'lib';
 ## change these:
 my $uid = 123;
 my $gid = 123;
-my $catname = 'my_catalog';
 
-## set path to IC server as an environment variable:
-##    EXT_INTERCHANGE_DIR=/path/to/interchange/server
-##
-$ENV{EXT_INTERCHANGE_CATALOG} ||= $catname;
+BEGIN {
+	$ENV{EXT_INTERCHANGE_DIR}     ||= '/path/to/interchange/server';
+	$ENV{EXT_INTERCHANGE_CATALOG} ||= 'catalog_name';
+}
 
 ## chuser if root
 use POSIX qw(setuid setgid);
@@ -23,18 +22,15 @@ if ($user eq 'root') {
 	setgid($gid);
 }
 
-## setup IC environment; other env var in .cshrc
+## setup IC environment
 use Vend::External;
 session();
 chdir $Vend::Cfg->{VendRoot}
 	or die "Unable to chdir $Vend::Cfg->{VendRoot}: $!\n";
 
+## do stuff
 use Vend::MyModule;
 
 my $m = Vend::MyModule->new();
-
-use Data::Dumper;
-
-print "\n";
 
 print $m->_is_username('josh');
