@@ -8,7 +8,6 @@ use lib 'lib';
 ## change these:
 my $uid = 123;
 my $gid = 123;
-
 BEGIN {
 	$ENV{EXT_INTERCHANGE_DIR}     ||= '/path/to/interchange/server';
 	$ENV{EXT_INTERCHANGE_CATALOG} ||= 'catalog_name';
