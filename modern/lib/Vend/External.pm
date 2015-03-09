@@ -34,7 +34,7 @@ BEGIN {
 		}
 	}
 	else {
-		die "no dir variable";
+		die "Cannot proceed: EXT_INTERCHANGE_DIR environment variable is not defined.\n";
 	}
 }
 
@@ -75,8 +75,6 @@ sub check_html {
 1;
 
 package main;
-
-my ($log, $die, $warn);
 
 BEGIN {
 	if($ENV{EXT_INTERCHANGE_DIR}) {
