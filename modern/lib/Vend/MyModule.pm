@@ -1,7 +1,6 @@
 package Vend::MyModule;
 
-use strict;
-use warnings;
+use Modern::Perl '2010';
 
 use Vend::Interpolate;
 

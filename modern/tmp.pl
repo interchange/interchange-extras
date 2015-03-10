@@ -1,7 +1,6 @@
 #!/bin/env perl
 
-use strict;
-use warnings;
+use Modern::Perl '2010';
 #use diagnostics;
 use lib 'lib';
 
@@ -32,4 +31,4 @@ use Vend::MyModule;
 
 my $m = Vend::MyModule->new();
 
-print $m->_is_username('josh');
+say $m->_is_username('josh');

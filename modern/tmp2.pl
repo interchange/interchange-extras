@@ -1,7 +1,6 @@
 #!/bin/env perl
 
-use strict;
-use warnings;
+use Modern::Perl '2010';
 #use diagnostics;
 use lib 'lib';
 
