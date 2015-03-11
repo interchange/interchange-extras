@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+
+use Getopt::Std;
+
+use vars qw/$opt_r $opt_R $opt_f/;
+
+getopts('u:fg:rRo');
+
+unless($opt_r || $opt_R) {
+	@files = @ARGV;
+}
+else {
+	@files = shift || '.';
+	die "Won't do this in a directory without catalog.cfg without -f flag.\n"
+		unless -f 'catalog.cfg' || $opt_f;
+	$recursive = $files[0];
+}
+
+unless ($opt_u) {
+	($uid, $gid) = (stat('.'))[4,5];
+}
+else {
+	($uid, $gid) = (getpwnam($opt_u))[2,3];
+}
+
+die "No user ID for $opt_u\n" unless $uid;
+die "No group ID for $opt_u\n" unless $gid;
+
+if($recursive) {
+	@files = `find $recursive`;
+	chop @files;
+	@files = grep ! -l $_, @files;
+}
+
+sub doperm {
+	my $file = shift;
+	my $perm = 0660;
+	if($opt_o) {
+		$perm |= 04;
+	}
+	if(-d $file) {
+		$perm |= 02110;
+		$perm |= 01 if $opt_o;
+	}
+	elsif( $file =~ m{/bin/}) {
+		$perm |= 0110;
+		$perm |= 1 if $opt_o;
+	}
+	chown $uid, $gid, $file or return undef;
+	chmod $perm, $file;
+}
+
+for(@files) {
+	#print "doing $_\n";
+	next if /^\.\/\.git/;
+	doperm($_) or die "Problems changing $_: $!\n";
+}
