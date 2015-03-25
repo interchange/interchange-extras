@@ -13,10 +13,9 @@ BEGIN {
 
 sub new {
 	my $class = shift;
-	my $opt = shift || {};
-	my $self = { %$opt };
-	bless $self, $class;
-	return $self;
+	my $args = shift || {};
+	my $self = { %$args };
+	return bless $self, $class;
 }
 
 sub log {
