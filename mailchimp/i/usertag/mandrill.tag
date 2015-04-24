@@ -8,7 +8,7 @@ sub {
 	my ($method, $opt) = @_;
 
 	use vars qw/$Tag/;
-	my ($log, $die, $warn) = $Tag->logger('mandrill', 'logs/mandrill.log');
+	our ($log, $die, $warn) = $Tag->logger('mandrill', 'logs/mandrill.log');
 
 	if (delete $opt->{queue}) {
 		my $qdb = dbref('mailchimp_queue')
@@ -55,9 +55,10 @@ sub {
 		google_analytics_domains => [
 		],
 		google_analytics_campaign => q{},
-		metadata => q{},
+		metadata => {
+		},
 		recipient_metadata => q{},
-		attachments => q{},
+		attachments => [ {} ], ## This is an array of hashes, i.e. [ { foo=>'bar'} ]
 		images => q{},
 	);
 	my %api = (
@@ -99,13 +100,14 @@ sub {
 
 		my $rt = ref $s;
 		unless(ref $o eq $rt) {
-			return $die->("oops, mismatched reference type, s=%s, o=%o", uneval($s), uneval($o));
+			return $die->("oops, mismatched reference type, struct=%s, opt=%o; ref s: %s, ref o: %s", uneval($s), uneval($o), ref($s), ref($o) ) if defined $o;
 		}
 
 		if ($rt eq 'HASH') {
 			for my $k (keys %$o) {
 				next unless $k =~ /[A-Za-z]/;
 				next unless exists $s->{$k};
+#$log->("doing hash: $k");
 				my $v = grok_api($s->{$k}, $o->{$k});
 				next unless defined $v and length $v;
 				$o->{$k} = $v;
@@ -208,6 +210,10 @@ To call from Perl, you must use global=1, and structure like so:
 		});
 		return $res;
 	[/perl]
+
+If you use the C<queue> option, you don't need global=1, but you will
+need to set the [perl] tag's C<tables> option to included
+C<mailchimp_queue>.
 
 =head1 PREREQUISITES
 
