@@ -11,7 +11,23 @@ All files are intended to reside in your Interchange server directory.
 
 
 
+Checking syntax:
+
+	- of a module:
+
+		cd lib; perl -MVend::MyModule -e 'print "OK"'
+
+	- of a script (ignore any Interchange syntax errors):
+		
+		perl -wc -Ilib script.pl
+
+
+
+http://www.modernperlbooks.com/books/modern_perl_2014/07-object-oriented-perl.html
+
 http://perltricks.com/article/25/2013/5/20/Old-School-Object-Oriented-Perl
+
+http://perlmaven.com/getting-started-with-classic-perl-oop
 
 http://perldoc.perl.org/perlobj.html
 
