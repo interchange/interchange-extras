@@ -1,0 +1,74 @@
+[perl table="bounced_emails"]
+## Authorize:
+
+	if ($Tag->env('REQUEST_METHOD') eq 'HEAD') {
+		return undef;
+	}
+
+	my ($log, $die, $warn) = $Tag->logger('webhook', 'logs/mandrill.log');
+
+	my $sig = $Tag->env('HTTP_X_MANDRILL_SIGNATURE') || '';
+	my $url = $Config->{VendURL} . '/query/mandrill_webhooks.html';
+	my $key = 'change-me';
+
+	my @cgi;
+	for my $c (keys %$CGI) {
+		next if $c =~ /^(?:mv_nextpage|mv_session_id)/;
+		push @cgi, $c;
+	}
+	@cgi = sort @cgi;
+	my $cgiout;
+	for my $c (@cgi) {
+		$cgiout .= $c . $CGI->{$c};
+	}
+	$url .= $cgiout;
+	my $own_sig = $Tag->filter('hmac_sha1_base64', $url, undef, $key);
+
+	## pad:
+	while (length($own_sig) % 4) {
+		$own_sig .= '=';
+	}
+
+	unless ($sig eq $own_sig) {
+		## fail.
+		$die->('bad request: ' . $Tag->env('REQUEST_URI') . ", cgi=$cgiout, sig=$sig, own_sig=$own_sig, url=$url");
+		return $Tag->deliver({ type => 'text/html', status => '400 Bad Request', body => '<h1>400 Bad Request</h1>' });
+	}
+
+## now authorized, continue.
+
+	my $json = $Tag->json_decode_hash( $CGI->{mandrill_events} );
+
+	my $bdb = $Db{bounced_emails}
+		or return $die->('no bounced_emails table found');
+	
+	for my $j (@$json) {
+		my ($insert, $email, %cols, $type);
+		if ( $j->{event} =~ /(?:spam|bounce)$/ ) {   ## we only handle bounces/spam, since you can't truly unsubscribe from transaction email
+			$type = $j->{event};
+			$type =~ s/_bounce//;
+			$email = $j->{msg}{email};
+			my $num = $bdb->field( $email, 'bounce_num' ) || 0;
+			%cols = (
+				bounce_type => $type,
+				bounce_num  => ++$num,
+				header      => uneval( $j->{msg} ),
+			);
+			if ($type eq 'hard' || $type eq 'spam') {
+				$cols{cancel_subs} = 1;
+				$cols{dont_email}  = 1;
+			}
+			$insert = 1;
+		}
+		else {
+			return $die->('unknown event: %s', $j->{event} );
+		}
+		if ($email and $insert) {
+			$bdb->set_slice($email, \%cols)
+				or return $die->("failed to set_slice. email=$email, cols=" . uneval(\%cols) );
+			$log->("insert for $email succeeded. type=$type");
+		}
+	}
+
+	return;
+[/perl]
