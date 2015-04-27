@@ -100,10 +100,10 @@ sub {
 
 	push(@extra, "Cc: $cc") if $cc;
 
-	my %ext;
+	my $ext;
 	for (@extra) {
 		my ($k,$v) = split ': ', $_;
-		$ext{$k} = $v;
+		$ext->{$k} = $v;
 	}
 
 	my $from_name;
@@ -130,7 +130,7 @@ sub {
 				from_email  => $from,
 				from_name   => $from_name,
 				to          => $tos,
-				headers     => [ \%ext ],
+				headers     => $ext,
 				bcc_address => $bcc,
 				tags        => ref $opt->{tags} ? $opt->{tags} : [ $opt->{tags} ],
 				metadata    => ref $opt->{metadata} ? $opt->{metadata} : { $opt->{metadata} },

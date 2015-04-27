@@ -32,7 +32,8 @@ sub {
 				type => q{},
 			},
 		],
-		headers => [ {} ], ## This is an array of hashes, i.e. [ { foo=>'bar'} ]
+		headers => {
+		},
 		important => q{},
 		track_opens => q{},   # true by default, but can be changed via "Sending Options" in Mandrill
 		track_clicks => q{},  # true by default for HTML mail, but can be changed via "Sending Options" in Mandrill
