@@ -101,7 +101,7 @@ sub {
 
 		my $rt = ref $s;
 		unless(ref $o eq $rt) {
-			return $die->("oops, mismatched reference type, struct=%s, opt=%o; ref s: %s, ref o: %s", uneval($s), uneval($o), ref($s), ref($o) ) if defined $o;
+			return $die->("oops, mismatched reference type, struct=%s, opt=%o; ref s: %s, ref o: %s", uneval($s), uneval($o), ref($s), ref($o) ) if $o;
 		}
 
 		if ($rt eq 'HASH') {
