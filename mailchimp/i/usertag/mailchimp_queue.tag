@@ -12,9 +12,21 @@ sub {
 	for my $q (@$q_ary) {
 		my $opt = $ready_safe->reval( $q->{opt} );
 		delete $opt->{hide};
-		my $res = $Tag->mailchimp( $q->{method}, $opt );
-		$qdb->set_field($q->{code}, 'processed', 1) if $res;
-$log->("mailchimp: $res") if $res;
+		$opt->{return_ref} = 1;  # we want to evaluate success/failure
+		my $result_ref = $Tag->mailchimp( $q->{method}, $opt );
+		if ($result_ref->{status} eq 'error') {
+			# a failure.
+			my $processed = $result_ref->{code};  # never was processed, don't keep trying
+			$qdb->set_field($q->{code}, 'processed', $processed);
+			# code 330 is invalid ecomm order
+			# code 220 is list_invalidimport (signup disabled)
+			# code -100 is validationErrorr
+		}
+		else {
+			# success!
+			$qdb->set_field($q->{code}, 'processed', 1);
+		}
+$log->("mailchimp: " . uneval($result_ref) );
 	}
 
 ## Mandrill:

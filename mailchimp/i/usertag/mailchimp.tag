@@ -278,17 +278,14 @@ $log->("queued $method, opts were: " . uneval($opt) );
 	my $out = $res->content;
 	   $out = decode_json($out);
 
+	return $out if $opt->{return_ref};   # if you want a ref back, you will need to check for success or failure on your end
+
 	if ($res->is_success) {
 $log->("performed $method. response: " . uneval($out) );
-		if ($opt->{return_ref}) {
-			return $out;
-		}
-		else {
-			return $opt->{hide}
-					? $log->("json was: $json")
-					: ::uneval($out) . "\njson was: $json"
-				;
-		}
+		return $opt->{hide}
+				? $log->("json was: $json")
+				: ::uneval($out) . "\njson was: $json"
+			;
 	}
 	else {
 		my $err = "Code: $out->{code}, $out->{name}. $out->{error}" . "\njson was: $json";
