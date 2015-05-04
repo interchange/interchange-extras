@@ -100,8 +100,11 @@ sub {
 		my ($s, $o) = @_;
 
 		my $rt = ref $s;
-		unless(ref $o eq $rt) {
-			return $die->("oops, mismatched reference type, struct=%s, opt=%o; ref s: %s, ref o: %s", uneval($s), uneval($o), ref($s), ref($o) ) if $o;
+		if ($o and ref $o ne $rt) {
+			return $die->("oops, mismatched reference type, struct=%s, opt=%s; ref s: %s, ref o: %s", uneval($s), uneval($o), ref($s), ref($o) );
+		}
+		elsif (! $o) {
+			return;
 		}
 
 		if ($rt eq 'HASH') {
