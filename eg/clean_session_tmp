@@ -1,0 +1,16 @@
+#!/bin/sh
+
+for DIR in $*
+do
+        for i in session tmp
+        do
+            if test -d $DIR/$i 
+            then
+                find $DIR/$i -type f -mtime +7 | xargs --no-run-if-empty rm
+                find $DIR/$i -depth -mindepth 1 -type d -empty | xargs --no-run-if-empty rmdir
+            else
+                echo "$0: $DIR/$i doesn't exist."
+            fi
+        done
+done
+
