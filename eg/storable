@@ -1,0 +1,28 @@
+#!/usr/bin/perl -w
+
+use Storable;
+use Data::Dumper;
+use Getopt::Std;
+use vars qw/ $opt_s /;
+getopts('s');
+
+unless(@ARGV) {
+	die "usage: storable [-s] file1 [file2 file3 ...]\n";
+}
+
+$Data::Dumper::Indent = 2;
+$Data::Dumper::Terse = 1;
+
+my $sub = \&Storable::retrieve;
+
+unless ($opt_s) {
+	$sub = sub {
+		my $data = `cat $_`;
+		return Storable::thaw($data);
+	};
+}
+
+for(@ARGV) {
+	print "$_: " . Dumper($sub->($_));
+	print "\n";
+}
