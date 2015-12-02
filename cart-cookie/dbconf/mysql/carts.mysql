@@ -1,0 +1,10 @@
+Database  carts  carts.txt   __SQLDSN__
+Database  carts  COLUMN_DEF  "code=varchar(255) NOT NULL PRIMARY KEY"
+Database  carts  COLUMN_DEF  "name=varchar(255)"
+Database  carts  COLUMN_DEF  "type=varchar(32)"
+Database  carts  COLUMN_DEF  "uid=varchar(64) NOT NULL"
+Database  carts  COLUMN_DEF  "created=datetime"
+Database  carts  COLUMN_DEF  "last_modified=timestamp"
+Database  carts  CREATE_EMPTY_TXT  1
+Database  carts  NAME        code name type uid created last_modified
+#NoImport carts

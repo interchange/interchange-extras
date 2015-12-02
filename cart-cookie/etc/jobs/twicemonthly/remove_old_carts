@@ -1,0 +1,22 @@
+[perl tables="carts cart_products"]
+##
+## We typically run this on the 8th and 23rd of every month.
+##
+	my $expire = $Variable->{CART_COOKIE_EXPIRY} || '12 weeks';
+	my $carts_table = 'carts';
+	my $cart_products_table = 'cart_products';
+
+	my $cdb = $Db{$carts_table};
+	my $pdb = $Db{$cart_products_table};
+	my $removed = 0;
+
+	my $too_old = $Tag->time({ adjust => "-$expire", body => '%Y-%m-%d %H:%M:%S' });
+	my $ary = $cdb->query("SELECT code FROM carts WHERE last_modified < '$too_old'");
+	for(@$ary) {
+		my $del = $cdb->delete_record($_->[0]);
+		$pdb->query("DELETE FROM $cart_products_table WHERE cart = '$_->[0]'");   # also delete from pdb.
+		$removed += $del;
+	}
+
+	return $removed ? "Deleted $removed old carts" : undef;
+[/perl]

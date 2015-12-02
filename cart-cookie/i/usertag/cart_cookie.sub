@@ -1,0 +1,24 @@
+GlobalSub cart_cookie <<EOR
+sub {
+	## ref to cart, action (add/update/delete), hashref to new line item data (except delete), hashref of line item data prior to change (except add), name of cart
+	my ($cart_ref, $action, $item_ref, $olditem_ref, $cart_name) = @_;
+#::logDebug("cart_cookie sub called, action = $action, item_ref = " . uneval($item_ref) . ", olditem_ref = " . uneval($olditem_ref) . ", cart_name = $cart_name");
+
+	## action of delete is a duplicate, since update will be called first, with quantity = 0.
+	## unless we are manually modifying the cart somewhere, so be careful of this.
+	return if $action eq 'delete';
+
+	my $affected_sku = $item_ref->{code} || $olditem_ref->{code} || '';
+	my $affected_qty;
+	   $affected_qty = $item_ref->{quantity} if $item_ref;
+#::logDebug("going to run tag cart_cookie with update=1, action=$action, sku=$affected_sku, qty=$affected_qty, name=$cart_name");
+
+	Vend::Tags->cart_cookie({
+			update => 1,
+			action => $action,
+			sku    => $affected_sku,
+			qty    => $affected_qty,
+			name   => $cart_name,
+		});
+}
+EOR

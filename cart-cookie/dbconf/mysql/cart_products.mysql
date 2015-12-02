@@ -1,0 +1,10 @@
+Database  cart_products  cart_products.txt   __SQLDSN__
+Database  cart_products  COLUMN_DEF  "cart=varchar(255) NOT NULL"
+Database  cart_products  COLUMN_DEF  "sku=varchar(64) NOT NULL"
+Database  cart_products  COLUMN_DEF  "position=int NOT NULL DEFAULT 0"
+Database  cart_products  COLUMN_DEF  "quantity=int NOT NULL DEFAULT 1"
+Database  cart_products  COLUMN_DEF  "hash=varchar(255) NOT NULL"
+Database  cart_products  COMPOSITE_KEY  cart sku
+Database  cart_products  CREATE_EMPTY_TXT  1
+Database  cart_products  NAME        cart sku position quantity hash
+#NoImport cart_products
