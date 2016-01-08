@@ -100,7 +100,7 @@ sub {
 
 	push(@extra, "Cc: $cc") if $cc;
 
-	my $ext;
+	my $ext = {};
 	for (@extra) {
 		my ($k,$v) = split ': ', $_;
 		$ext->{$k} = $v;

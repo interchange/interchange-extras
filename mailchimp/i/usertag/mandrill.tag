@@ -8,7 +8,7 @@ sub {
 	my ($method, $opt) = @_;
 
 	use vars qw/$Tag/;
-	our ($log, $die, $warn) = $Tag->logger('mandrill', 'logs/mandrill.log');
+	my ($log, $die, $warn) = $Tag->logger('mandrill', 'logs/mandrill.log');
 
 	if (delete $opt->{queue}) {
 		my $qdb = dbref('mailchimp_queue')
@@ -59,7 +59,7 @@ sub {
 		metadata => {
 		},
 		recipient_metadata => q{},
-		attachments => [ {} ], ## This is an array of hashes, i.e. [ { foo=>'bar'} ]
+		attachments => [ ], ## This is an array of hashes, i.e. [ { foo=>'bar'} ]
 		images => q{},
 	);
 	my %api = (
@@ -72,7 +72,8 @@ sub {
 			},
 			'send-template' => {
 				template_name => q{},
-				template_content => q{},
+				template_content => [
+				],
 				message => \%message,
 				async   => q{},
 				ip_pool => q{},
@@ -99,15 +100,14 @@ sub {
 	 sub grok_api {
 		my ($s, $o) = @_;
 
-		my $rt = ref $s;
-		if ($o and ref $o ne $rt) {
-			return $die->("oops, mismatched reference type, struct=%s, opt=%s; ref s: %s, ref o: %s", uneval($s), uneval($o), ref($s), ref($o) );
+		unless(ref($o) eq ref($s)) {
+			die sprintf('oops, mismatched reference type, s is: %s, o is: %s', ref($s), ref($o));
 		}
 		elsif (! $o) {
 			return;
 		}
 
-		if ($rt eq 'HASH') {
+		if (ref $s eq 'HASH') {
 			for my $k (keys %$o) {
 				next unless $k =~ /[A-Za-z]/;
 				next unless exists $s->{$k};
@@ -122,7 +122,7 @@ sub {
 			return unless scalar(keys %$o);
 			return $o;
 		}
-		elsif ($rt eq 'ARRAY') {
+		elsif (ref $s eq 'ARRAY') {
 			for (my $y=0; $y <= $#{$s}; $y++) {
 				$o->[$y] = grok_api($s->[$y], $o->[$y]);
 			}
@@ -137,7 +137,10 @@ sub {
 		}
 	};
 
-	$struct = grok_api($struct, $opt);
+	eval {
+	    $struct = grok_api($struct, $opt);
+    };
+    return $die->($@) if $@;
 #$log->("struct is now: " . ::uneval($struct) );
 
 	my $output_fmt = $opt->{output} || 'json';
