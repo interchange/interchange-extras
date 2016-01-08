@@ -9,6 +9,8 @@ All files are intended to reside in your Interchange server directory.
 
 	External yes
 
+- Configure @External_directives in Config.pm
+
 
 
 Checking syntax:
