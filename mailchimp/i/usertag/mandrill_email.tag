@@ -8,7 +8,6 @@ use MIME::Base64;
 use MIME::Types;
 sub {
     my ($to, $subject, $reply, $from, $extra, $opt, $body) = @_;
-	my $ok = 0;
     my ($cc, $bcc, @extra);
 
 	use vars qw/ $Tag /;
@@ -121,7 +120,9 @@ sub {
 		push @$tos, { email => $e, name => $to_name };
 	}
 
-	$ok = $Tag->mandrill({
+	my $ok;
+	eval {
+        $ok = $Tag->mandrill({
 			method => 'messages/send',
 			message => {
 				html        => $opt->{html},
@@ -138,9 +139,11 @@ sub {
 			},
 			queue => $opt->{queue},
 		});
+    };
+    return ::logError($@) if $@;
 
     if (!$ok) {
-        logError("Unable to send mail using mandrill_email\n" .
+        ::logError("Unable to send mail using mandrill_email\n" .
             "To '$to'\n" .
             "From '$from'\n" .
             "With extra headers '$extra'\n" .

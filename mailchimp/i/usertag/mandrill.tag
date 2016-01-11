@@ -156,7 +156,11 @@ sub {
 	$req->content($json);
 
 	my $ua = LWP::UserAgent->new( timeout => $opt->{timeout} || 15, agent => 'Interchange' );
-	my $res = $ua->request($req);
+	my $res;
+	eval {
+        $res = $ua->request($req);
+	};
+	return $die->($@) if $@;
 
 #return ::uneval(%$res);  # for testing
 
