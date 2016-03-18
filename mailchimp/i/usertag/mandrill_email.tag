@@ -120,6 +120,19 @@ sub {
 		push @$tos, { email => $e, name => $to_name };
 	}
 
+	# split multiple bccs
+	if ($bcc) {
+		my @bcc_emails = split /[,\0]\s*/, $bcc;
+		BCC: {
+			last if scalar @bcc_emails == 1;
+			$bcc = '';
+			# if more than one bcc, put in the $tos array
+			for (@bcc_emails) {
+				push @$tos, { email => $_, type => 'bcc' };
+			}
+		}
+	}
+
 	my $ok;
 	eval {
         $ok = $Tag->mandrill({
