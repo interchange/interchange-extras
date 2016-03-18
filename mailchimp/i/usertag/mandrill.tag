@@ -167,17 +167,20 @@ sub {
 	my $out = $res->content;
 	   $out = decode_json($out);
 
-	if ($res->is_success) {
-		$log->("performed $method. response: " . uneval($out) );
-		return $opt->{hide}
-				? $log->("json was: $json")
-				: ::uneval($out)
-			;
+	SUCCESS: {
+		if ($res->is_success) {
+#$log->("out: " . ::uneval($out));
+			last SUCCESS unless $out->[0]->{status} eq 'sent';
+			$log->("performed $method. response: " . uneval($out) );
+			return $opt->{hide}
+					? $log->("json was: $json")
+					: ::uneval($out)
+				;
+		}
 	}
-	else {
-		my $err = "Code: $out->{code}, $out->{name}. $out->{message}";
-		return $opt->{hide} ? $log->($err) : $die->($err);
-	}
+
+	my $err = "Code: $out->{code}, $out->{name}. $out->{message}";
+	return $opt->{hide} ? $log->($err) : $die->($err);
 }
 EOR
 UserTag mandrill Documentation <<EOD
