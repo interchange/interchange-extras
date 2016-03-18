@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# A hook script to automatically push production changes up
+# so that production repo never gets out of sync from other updates
+#
+
+echo
+echo "***** pushing changes to origin"
+echo
+
+git push

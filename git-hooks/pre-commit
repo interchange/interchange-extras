@@ -1,0 +1,11 @@
+#!/bin/sh
+# 
+# stop commit if not 'interch' user
+
+if [ ${USER} != interch ]
+then
+    cat <<EOF >&2
+Please commit as the 'interch' user.
+EOF
+    exit 1
+fi
