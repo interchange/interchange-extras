@@ -1,0 +1,4 @@
+code	Variable	pref_group
+CGI_URL	/	Directories and Paths
+SECURE_SERVER	http://localhost:5001	Directories and Paths
+SERVER_NAME	localhost:5001	Directories and Paths
