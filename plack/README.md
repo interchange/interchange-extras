@@ -36,9 +36,16 @@ Set `Mall No` in your `interchange.cfg`.
 
 ## Load
 
-http://localhost:5001/
+[http://localhost:5001](http://localhost:5001/)
 
-## Extra credit: expose your local server to the internet
+## Extra credit 1: use a ".dev" domain on your local box
+
+Install `dnsmasq` and then run the [`dnsmasq.sh`](dnsmasq.sh) command as root.
+
+Alter `site.txt` to use the ".dev" domain of your choosing (plus port
+number), e.g. _strap.dev:5001_.
+
+## Extra credit 2: expose your local server to the internet
 
 Install [ngrok](https://ngrok.com/) and run with `ngrok http 5001`.
 Alter the server variables in `site.txt` to use the provided hostname,
