@@ -25,7 +25,7 @@ Copy the [psgi file](app.psgi) to your Interchange root:
 and customize it.
 
 Customize your catalog's `products/variable.txt` or copy
-[`products/site.txt`](site.txt) to your catalog and adjust the
+[`products/site.txt`](products/site.txt) to your catalog and adjust the
 variables within.
 
 Set `Mall No` in your `interchange.cfg`.
@@ -43,7 +43,7 @@ Set `Mall No` in your `interchange.cfg`.
 Install `dnsmasq` and then run the [`dnsmasq.sh`](dnsmasq.sh) command as root.
 
 Alter `site.txt` to use the ".dev" domain of your choosing (plus port
-number), e.g. _strap.dev:5001_.
+number), e.g. _strap.dev:5001_
 
 ## Extra credit 2: expose your local server to the internet
 
