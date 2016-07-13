@@ -9,8 +9,10 @@ with [Ubic](https://metacpan.org/pod/Ubic).
 
 ## Setup
 
-First, you'll need `cpanm`:
-`% curl -L https://cpanmin.us | perl - App::cpanminus`
+First, you'll need `cpanm` ([cpanminus](http://cpanmin.us)):
+```
+curl -L https://cpanmin.us | perl - App::cpanminus`
+```
 
 Then Plack and a few middlewares:
 
@@ -30,6 +32,12 @@ variables within.
 
 Set `Mall No` in your `interchange.cfg`.
 
+Don't forget to run your `bin/compile_link` to create the "vlink" file:
+```
+cd /path/to/interchange/
+./bin/compile_link
+```
+
 ## Start
 
 `plackup -s Starman --workers=1 -p 5001 -a /path/to/interchange/app.psgi -D`
@@ -43,11 +51,15 @@ Set `Mall No` in your `interchange.cfg`.
 Install `dnsmasq` and then run the [`dnsmasq.sh`](dnsmasq.sh) command as root.
 
 Alter `site.txt` to use the ".dev" domain of your choosing (plus port
-number), e.g. _strap.dev:5001_
+number), e.g. http://strap.dev:5001
 
 ## Extra credit 2: expose your local server to the internet
 
-Install [ngrok](https://ngrok.com/) and run with `ngrok http 5001`.
+Install [ngrok](https://ngrok.com/) and run with:
+```
+ngrok http 5001
+```
+
 Alter the server variables in `site.txt` to use the provided hostname,
 and restart or reconfigure Interchange.
 
