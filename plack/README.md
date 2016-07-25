@@ -9,12 +9,9 @@ with [Ubic](https://metacpan.org/pod/Ubic).
 
 ## Setup
 
-First, you'll need `cpanm` ([cpanminus](http://cpanmin.us)):
-```
-curl -L https://cpanmin.us | perl - App::cpanminus`
-```
+1. First, you'll need `cpanm` ([cpanminus](http://cpanmin.us)).
 
-Then Plack and a few middlewares:
+2. Then Plack and a few middlewares:
 
 ```
 cpanm Plack Plack::Builder Plack::App::WrapCGI Plack::Middleware::Static Plack::Middleware::ForceEnv
