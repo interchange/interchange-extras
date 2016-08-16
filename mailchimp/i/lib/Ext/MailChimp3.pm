@@ -324,7 +324,7 @@ sub _convert_old ( $self, $method, $opt ) {
     # upsert_member
     $method eq 'upsert_member' and do {
         $new_opt->{subscriber_hash} = md5_hex( lc $new_opt->{email_address} );
-        $new_opt->{status_if_new}   = delete $new_opt->{double_optin} ? 'subscribed' : 'pending';
+        $new_opt->{status_if_new}   = defined delete $new_opt->{double_optin} ? 'pending' : 'subscribed';  # true means send confirm
         $new_opt->{status}          = $new_opt->{status_if_new};
     };
 
