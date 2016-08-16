@@ -12,21 +12,20 @@ sub {
 	for my $q (@$q_ary) {
 		my $opt = $ready_safe->reval( $q->{opt} ) || {};
 		delete $opt->{hide};
-		$opt->{return_ref} = 1;  # we want to evaluate success/failure
-		my $result_ref = $Tag->mailchimp( $q->{method}, $opt ) || {};
-		if ($result_ref->{status} eq 'error') {
-			# a failure.
-			my $processed = $result_ref->{code};  # never was processed, don't keep trying
-			$qdb->set_field($q->{code}, 'processed', $processed);
-			# code 330 is invalid ecomm order
-			# code 220 is list_invalidimport (signup disabled)
-			# code -100 is validationErrorr
-		}
-		else {
-			# success!
-			$qdb->set_field($q->{code}, 'processed', 1);
-		}
-$log->("mailchimp: " . uneval($result_ref) );
+		my $res;
+		eval {
+		    $res = $Tag->mailchimp( $q->{method}, $opt ) || '';
+		};
+		if ($@) {
+            my ($e, $status);
+            $e = $@;
+            $e =~ /'status' => 400/ and $status = 400;
+            $status and $qdb->set_field($q->{code}, 'processed', $status);
+            $die->(sprintf 'call to mailchimp.tag: %s', $e);
+            return;
+        }
+        $qdb->set_field($q->{code}, 'processed', 1);
+$log->("mailchimp: $res");
 	}
 
 ## Mandrill:
@@ -39,9 +38,9 @@ $log->("mailchimp: " . uneval($result_ref) );
 		eval {
 		    $res = $Tag->mandrill( $q->{method}, $opt ) || '';
         };
-        $die->($@) if $@;
+        return $die->(sprintf 'call to mandrill.tag: %s', $@) if $@;
 		$qdb->set_field($q->{code}, 'processed', 1) if $res;
-$log->("mandrill: $res") if $res;
+$log->("mandrill: $res");
 	}
 
 ## delete:
