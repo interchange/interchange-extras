@@ -45,10 +45,7 @@ sub die {
         Vend::Tags->error({ name => $self->{error_name}, set => $msg });
         ::logError('died: ' . $msg, { file => $self->{logfile} });
     }
-    else {
-        cluck $msg;
-    }
-    return;
+    cluck $msg;
 }
 
 sub warn {
