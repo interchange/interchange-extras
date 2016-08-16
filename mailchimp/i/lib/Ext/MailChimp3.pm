@@ -329,7 +329,7 @@ sub _convert_old ( $self, $method, $opt ) {
     };
 
     # set subscriber_hash
-    $method =~ /^(?:update_|delete_)member$/ and
+    $method =~ /^(?:update_|delete_)?member$/ and
         $new_opt->{subscriber_hash} = md5_hex( lc delete $new_opt->{email_address} );
 
     return ($method, $new_opt);
