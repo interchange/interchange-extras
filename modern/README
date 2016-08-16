@@ -9,7 +9,8 @@ All files are intended to reside in your Interchange server directory.
 
 	External yes
 
-- Configure @External_directives in Config.pm
+- Configure available exports via ExternalExport:
+    http://docs.icdevgroup.org/cgi-bin/online/confs/ExternalExport.html
 
 
 
