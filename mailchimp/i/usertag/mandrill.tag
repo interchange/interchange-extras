@@ -18,6 +18,12 @@ sub {
         return $opt->{hide} ? undef : 1;
     }
 
+    my %statuses_good = (
+        sent      => 1,
+        queued    => 1,
+        scheduled => 1,
+    );
+
 #use Data::Dumper;
     my %message = (
         html => q{},
@@ -86,6 +92,7 @@ sub {
                 id => q{},
             },
         },
+        async => q{},
     );
 #print Dumper(\%api);
 
@@ -165,12 +172,19 @@ sub {
 #return ::uneval(%$res);  # for testing
 
     my $out = $res->content;
-       $out = decode_json($out);
+
+    if ($out =~ /^[\[{]/) {
+        eval {
+           $out = decode_json($out);
+        };
+    }
 
     SUCCESS: {
         if ($res->is_success) {
 #$log->("out: " . ::uneval($out));
-            last SUCCESS unless $out->[0]->{status} eq 'sent';
+            last SUCCESS unless ref $out;
+
+            last SUCCESS unless $statuses_good{ $out->[0]->{status} };
             $log->("performed $method. response: " . uneval($out) );
             return $opt->{hide}
                     ? $log->("json was: $json")
@@ -179,7 +193,30 @@ sub {
         }
     }
 
-    my $err = "Code: $out->{code}, $out->{name}. $out->{message}";
+$log->("err opt->message->to was: " . ::uneval($opt->{message}{to}));
+    my $err;
+    if (ref $out) {
+        if (ref $out eq 'ARRAY') {
+            for my $ary (@$out) {
+                if ($ary->{status}) {
+                    $err .= "Failed: reason: $ary->{reject_reason}, status: $ary->{status}. ";
+                }
+                else {
+                    $err = "Code: $ary->{code}, $ary->{name}. $ary->{message}";
+                }
+            }
+        }
+        else {
+            $err = "Code: $out->{code}, $out->{name}. $out->{message}";
+        }
+    }
+    elsif (ref $res) {
+        $err = $res->content;
+    }
+    else {
+        $err = $res;
+    }
+
     return $opt->{hide} ? $log->($err) : $die->($err);
 }
 EOR
