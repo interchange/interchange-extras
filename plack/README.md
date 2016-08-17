@@ -14,7 +14,7 @@ with [Ubic](https://metacpan.org/pod/Ubic).
 2. Then Plack and a few middlewares:
 
 ```
-cpanm Plack Plack::Builder Plack::App::WrapCGI Plack::Middleware::Static Plack::Middleware::ForceEnv
+cpanm Plack Plack::Builder Plack::App::WrapCGI Plack::Middleware::Static Plack::Middleware::ForceEnv CGI::Emulate::PSGI CGI::Compile Plack::Handler::Starman
 ```
 
 ## Configuration
