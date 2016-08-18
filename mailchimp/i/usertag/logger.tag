@@ -1,6 +1,7 @@
 UserTag logger Order name file
 UserTag logger addAttr
 UserTag logger Routine <<EOR
+use Carp;
 sub {
 	my ($name, $file, $opt) = @_;
 	use vars qw/$Tag/;
@@ -14,6 +15,7 @@ sub {
 		my $msg = errmsg(@_);
 		$Tag->error( { name => $name, set => $msg });
 		Log( "died: $msg", { file => $file });
+		$opt->{really_die} and croak $msg;
 		return;
 	};
 	my $warn = sub {
