@@ -8,7 +8,7 @@ sub {
     my ($method, $opt) = @_;
 
     use vars qw/$Tag/;
-    my ($log, $die, $warn) = $Tag->logger('mandrill', 'logs/mandrill.log');
+    my ($log, $die, $warn) = $Tag->logger( 'mandrill', 'logs/mandrill.log', { really_die => delete $opt->{really_die} } );
 
     if (delete $opt->{queue}) {
         my $qdb = dbref('mailchimp_queue')
