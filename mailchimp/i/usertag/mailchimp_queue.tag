@@ -33,12 +33,22 @@ $log->("mailchimp: $res");
     my $mnq_ary = $qdb->query({ sql => $mnq, hashref => 1 });
     for my $q (@$mnq_ary) {
         my $opt = $ready_safe->reval( $q->{opt} ) || {};
+        $opt->{really_die} = 1;
         delete $opt->{hide};
+        $q->{tries} >= 2 and do {
+            $qdb->set_field($q->{code}, 'processed', 1);
+            next;
+        };
         my $res;
         eval {
             $res = $Tag->mandrill( $q->{method}, $opt ) || '';
         };
-        return $die->(sprintf 'call to mandrill.tag: %s', $@) if $@;
+        if ($@) {
+            my $e = $@;
+            $qdb->set_field( $q->{code}, 'tries', $q->{tries} + 1 );
+            $die->(sprintf 'call to mandrill.tag: %s', $e);
+            next;
+        }
         $qdb->set_field($q->{code}, 'processed', 1) if $res;
 $log->("mandrill: $res");
     }
