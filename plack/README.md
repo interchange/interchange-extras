@@ -37,7 +37,7 @@ cd /path/to/interchange/
 
 ## Start
 
-`plackup -s Starman --workers=1 -p 5001 -a /path/to/interchange/app.psgi -D`
+`starman --listen :5001 --workers 1 --daemonize /path/to/interchange/app.psgi`
 
 ## Load
 
