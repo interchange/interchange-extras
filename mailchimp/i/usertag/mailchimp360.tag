@@ -82,9 +82,9 @@ sub {
         my $mc_data = {
             method   => 'add_order',
             store_id => $store_id,
-            id       => $::Values->{mv_order_number} || POSIX::strftime( '%Y%m%d%H%M%S', localtime() ),
+            id       => $::Values->{mv_order_number} || POSIX::strftime( '%Y%m%d%H%M%S', localtime ),
             customer => {
-                id            => $::Session->{username} || $email_id,
+                id => $::Session->{username} || $email_id,
                 email_address => $email_id,
                 opt_in_status => $opt->{optin} || 0,
                 first_name    => $::Values->{fname},
@@ -95,10 +95,11 @@ sub {
             order_total    => Vend::Interpolate::total_cost(),
             tax_total      => Vend::Interpolate::salestax(),
             shipping_total => $Tag->shipping( { noformat => 1 } ),
-            lines          => \@items,
-            hide           => !$opt->{show},
-            queue          => defined $opt->{queue} ? $opt->{queue} : 1,
-            debug          => $opt->{debug},
+            processed_at_foreign => POSIX::strftime( '%F %T', localtime ),
+            lines                => \@items,
+            hide                 => !$opt->{show},
+            queue => defined $opt->{queue} ? $opt->{queue} : 1,
+            debug => $opt->{debug},
         };
 #::logDebug("mc data: " . ::uneval($mc_data) );
 
