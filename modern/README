@@ -3,16 +3,28 @@ Modern methods to develop for Interchange 5
 
 All files are intended to reside in your Interchange server directory.
 
-- If using IC < 5.10.0, replace your lib/Vend/External.pm with the
-  copy here.
+- If using IC < 5.10.1, replace your lib/Vend/External.pm with the
+  copy from: https://github.com/interchange/interchange/blob/master/lib/Vend/External.pm
 
 - Add to interchange.cfg and your catalog.cfg:
 
 	External yes
 
-- Configure available exports via ExternalExport:
-    http://docs.icdevgroup.org/cgi-bin/online/confs/ExternalExport.html
+- Also to catalog.cfg:
 
+    ExternalExport <<EOD
+      CatalogName
+      ScratchDefault
+      ValuesDefault
+      ScratchDir
+      SessionDB
+      SesssionDatabase
+      SessionExpire
+      VendRoot
+      VendURL
+      SecureURL
+      Variable
+    EOD
 
 
 Checking syntax:
