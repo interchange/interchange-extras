@@ -6,11 +6,12 @@ API version 1.
 ## Requirements
 
 - Perl 5.20 or higher
-- [Mail::Chimp3](http://p3rl.org/Mail::Chimp3) CPAN module
+- [Mail::Chimp3](http://p3rl.org/Mail::Chimp3)
+- MIME::Types
 
 ## Installation
 
-* run `cpanm --installdeps .` (or just `cpanm Mail::Chimp3`)
+* run `cpanm --installdeps .`
 
 * copy over files:
 

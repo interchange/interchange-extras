@@ -1,1 +1,2 @@
 requires 'Mail::Chimp3', '> 0.01';
+requires 'MIME::Types';
