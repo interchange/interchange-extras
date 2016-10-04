@@ -56,6 +56,7 @@ has store_id => (
 has products_table => ( is => 'ro', default => $Vend::Cfg->{ProductFiles}[0]  || 'products', );
 has desc_field     => ( is => 'ro', default => $Vend::Cfg->{DescriptionField} || 'description', );
 has price_field    => ( is => 'ro', default => $Vend::Cfg->{PriceField}       || 'price', );
+has vendor_field   => ( is => 'ro', default => $Vend::Cfg->{CategoryField}    || 'category', );
 has variants_table => ( is => 'ro', default => $Vend::Cfg->{ProductFiles}[1]  || 'variants', );
 
 =item * debug
@@ -410,10 +411,11 @@ sub _get_products ($self) {
             SELECT
                 sku AS id,
                 %s AS title,
-                %s AS price
+                %s AS price,
+                %s AS vendor
             FROM %s
         },
-        $self->desc_field, $self->price_field, $self->products_table
+        $self->desc_field, $self->price_field, $self->vendor_field, $self->products_table
     );
     return $self->_ic->dbh( $self->products_table )->selectall_arrayref( $sql, { Slice => {} } );
 }
