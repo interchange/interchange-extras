@@ -13,7 +13,7 @@ builder {
 
     # Static files
     enable 'Static',
-      path => qr{^/(images|js|css)/},
+      path => qr{^/(images|js|css|interchange-5)/},
       root => $doc_root;
 
     enable 'ForceEnv' => SCRIPT_NAME => $cat_script;
