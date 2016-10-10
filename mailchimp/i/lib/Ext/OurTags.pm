@@ -9,7 +9,7 @@ use Vend::Interpolate;
 
 BEGIN {
     if ($Vend::Cfg->{Database}) {
-        use Carp;
+        use Carp qw/ carp cluck /;
     }
     else {
         require DBI;
