@@ -1,0 +1,69 @@
+[perl tables="products alias"]
+    my ($log, $die, $warn) = $Tag->logger('alias', 'logs/alias.log');
+
+    my $adb = $Db{alias};
+    my $product_db = $Config->{ProductFiles}[0] || 'products';
+    my $desc_field = $Config->{DescriptionField} || 'description';
+    my $q = "SELECT sku, $desc_field FROM $product_db WHERE $desc_field != '' ORDER BY sku";
+    my $prod_aryref = $Db{$product_db}->query($q);
+
+    my @results;
+    my @error;
+
+    for (@$prod_aryref) {
+        my $sku = @$_[0];
+        my $desc = @$_[1];
+
+        $desc =~ s/&#\d{3}//g;   # remove entities
+        $desc =~ s/^\s+//;  # remove begin/end spaces
+        $desc =~ s/\s+$//;  # remove begin/end spaces
+        $desc =~ s/(\w+)'s/$1s/g;   # convert possessives
+        $desc =~ s/\W+/-/g;
+        $desc =~ s/-$//;
+        $desc =~ s/(\w+)/\L\u$1/g;   # convert to TitleCase (for lower, use just "\L")
+
+        #$desc .= '--'.$sku;   # add sku on the end
+
+        my $existing = $adb->row_hash($desc);
+        if($existing) {
+            if($existing->{real_page} ne $sku) {
+                # duplicate description exists
+                # check if existing is still in products
+                my $prod_still_exists = $Db{$product_db}->record_exists($existing->{real_page});
+                if($prod_still_exists) {
+                    push @results, "EXISTS: $desc, FOR: $existing->{real_page}, ATTEMPT: $sku";
+                    $log->("EXISTS: $desc, FOR: $existing->{real_page}, ATTEMPT: $sku");
+                }
+                else {
+                    # remove alias for old sku, then store
+                    $adb->delete_record($existing->{alias});
+                    my $store_alias = $adb->set_slice($desc, 'real_page', $sku);
+                    if($store_alias) {
+                        push @results, "STORING: $desc, FOR: $sku -- OLD: $existing->{real_page}";
+                        $log->("STORING: $desc, FOR: $sku -- OLD: $existing->{real_page}");
+                    }
+                    else {
+                        push @error, "---ERROR: $desc, FOR: $sku -- OLD: $existing->{real_page}";
+                        $die->("---ERROR: $desc, FOR: $sku -- OLD: $existing->{real_page}");
+                    }
+                }
+            }
+            # else skip, already there
+        }
+        else {
+            # store alias
+            my $store_alias = $adb->set_slice($desc, 'real_page', $sku);
+            if($store_alias) {
+                push @results, "STORING: $desc, FOR: $sku";
+                $log->("STORING: $desc, FOR: $sku");
+            }
+            else {
+                push @error, "---ERROR: $desc, FOR: $sku";
+                $die->("---ERROR: $desc, FOR: $sku");
+            }
+        }
+    }
+
+    return unless scalar @results;
+    return join "\n", @results;
+[/perl][alias-remove-dupes]

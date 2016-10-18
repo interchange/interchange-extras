@@ -1,0 +1,44 @@
+[set page_title]Create alias for product[/set]
+[set ui_class]Items[/set]
+[set icon_name]icon_item.gif[/set]
+
+
+@_UI_STD_HEAD_@
+
+<!-- BEGIN REAL STUFF -->
+
+[perl tables="products alias"]
+    my $adb = $Db{alias};
+    my $sku = $CGI->{item_id};
+    my $desc = $Tag->data($Config->{ProductFiles}[0], $Config->{DescriptionField}, $sku);
+    $desc =~ s/\W+/-/g;
+    $desc =~ s/(\w+)/\L\u$1/g;
+    my $existing = $adb->row_hash($desc);
+    if($existing) {
+        if($existing->{real_page} ne $sku) {
+            $CGI->{already_exists} = $desc;
+            $CGI->{exists_sku} = $existing->{real_page};
+        }
+
+    }
+    else {
+        $Tag->data('alias', 'real_page', $desc, { value => $sku });
+    }
+    return;
+[/perl]
+
+[if cgi already_exists]
+<h2>The description '[cgi already_exists]' is already in the alias table as '[cgi exists_sku]'.
+[table-editor
+    item-id="[cgi already_exists]"
+    table=alias
+/]
+
+[else]
+    [flex-select
+            table=alias
+            sql-query="select * from alias where real_page = '[cgi item_id]'"
+            /]
+[/else]
+[/if]
+@_UI_STD_FOOTER_@

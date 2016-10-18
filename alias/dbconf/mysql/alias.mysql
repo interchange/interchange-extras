@@ -1,0 +1,7 @@
+Database  alias  alias.txt __SQLDSN__
+Database  alias  COLUMN_DEF   "alias=varchar(255) NOT NULL PRIMARY KEY"
+Database  alias  COLUMN_DEF   "real_page=varchar(64) NOT NULL DEFAULT ''"
+Database  alias  DEFAULT_TYPE text
+Database  alias  CREATE_EMPTY_TXT 1
+Database  alias  NAME   alias real_page
+Database  alias  INDEX  real_page

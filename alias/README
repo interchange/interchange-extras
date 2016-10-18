@@ -1,0 +1,19 @@
+=========
+ Aliases
+=========
+
+dbconf/mysql/alias.mysql
+pages/admin/create_alias.html (if you want to allow them to create aliases on their own)
+usertag/alias_or_sku.tag (use this for linking throughout site)
+
+catalog.cfg:
+    AliasTable  alias
+
+flypage.html, in meta_header:
+    [tmp alias][data table=alias col=alias key="[item-code]" foreign=real_page][/tmp]
+    [if scratch alias]<link rel="canonical" href="__SAMPLEURL____CGI_URL__[if variable CGI_URL !~ /\/$/]/[/if][scratch alias][if scratch mv_add_dot_html].html[/if]">[/if]
+
+To automatically create aliases, use IC job:
+    - etc/jobs/twicedaily/create_aliases
+    - e.g.: interchange/bin/interchange --runjobs=MYCATALOG=twicedaily
+
