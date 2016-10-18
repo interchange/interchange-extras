@@ -77,6 +77,7 @@ sub {
                 price              => Vend::Interpolate::product_price( $it->{code}, 1, $it->{mv_ib} ),
             };
         }
+        return unless scalar @items;
 #::logDebug("mc360: items=" . ::uneval(\@items));
 
         my $mc_data = {
