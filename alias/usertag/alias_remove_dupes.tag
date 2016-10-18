@@ -41,10 +41,9 @@ sub {
     my $sth = $rdbh->prepare(q{
         REPLACE INTO redirects (
             old_link,
-            new_link,
-            itemno
+            new_link
         )
-        VALUES ( ?, ?, ? )
+        VALUES ( ?, ? )
     });
 
     my $sth2 = $rdbh->prepare(q{
@@ -54,7 +53,7 @@ sub {
 
     my @out;
     for my $alias (@$dupes) {
-        my $result = $sth->execute( $alias->{alias}, '', $alias->{real_page} )
+        my $result = $sth->execute( $alias->{alias}, $new_links->{ $alias->{real_page} } )
             or push @out, sprintf 'FAILURE to insert for: %s. %s', $alias->{alias}, $rdbh->errstr;
         next unless $result;
 
@@ -67,3 +66,8 @@ sub {
     return join "\n", @out;
 }
 EOR
+UserTag alias_remove_dupes Documentation <<EOD
+
+Requires the "redirects" feature.
+
+EOD
