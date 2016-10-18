@@ -6,28 +6,6 @@ sub {
     use vars qw/$Tag $ready_safe/;
     my ($log, $die, $warn) = $Tag->logger('mailchimp_queue', 'logs/mailchimp_queue.log');
 
-## MailChimp:
-    my $mcq = q{SELECT * FROM mailchimp_queue WHERE processed = 0 AND type = 'mailchimp'};
-    my $q_ary = $qdb->query({ sql => $mcq, hashref => 1 });
-    for my $q (@$q_ary) {
-        my $opt = $ready_safe->reval( $q->{opt} ) || {};
-        delete $opt->{hide};
-        my $res;
-        eval {
-            $res = $Tag->mailchimp( $q->{method}, $opt ) || '';
-        };
-        if ($@) {
-            my ($e, $status);
-            $e = $@;
-            $e =~ /'status' => 400/ and $status = 400;
-            $status and $qdb->set_field($q->{code}, 'processed', $status);
-            $die->(sprintf 'call to mailchimp.tag: %s', $e);
-            return;
-        }
-        $qdb->set_field($q->{code}, 'processed', 1);
-$log->("mailchimp: $res");
-    }
-
 ## Mandrill:
     my $mnq = q{SELECT * FROM mailchimp_queue WHERE processed = 0 AND type = 'mandrill'};
     my $mnq_ary = $qdb->query({ sql => $mnq, hashref => 1 });
@@ -51,6 +29,28 @@ $log->("mailchimp: $res");
         }
         $qdb->set_field($q->{code}, 'processed', 1) if $res;
 $log->("mandrill: $res");
+    }
+
+## MailChimp:
+    my $mcq = q{SELECT * FROM mailchimp_queue WHERE processed = 0 AND type = 'mailchimp'};
+    my $q_ary = $qdb->query({ sql => $mcq, hashref => 1 });
+    for my $q (@$q_ary) {
+        my $opt = $ready_safe->reval( $q->{opt} ) || {};
+        delete $opt->{hide};
+        my $res;
+        eval {
+            $res = $Tag->mailchimp( $q->{method}, $opt ) || '';
+        };
+        if ($@) {
+            my ($e, $status);
+            $e = $@;
+            $e =~ /'status' => 400/ and $status = 400;
+            $status and $qdb->set_field($q->{code}, 'processed', $status);
+            $die->(sprintf 'call to mailchimp.tag: %s', $e);
+            next;
+        }
+        $qdb->set_field($q->{code}, 'processed', 1);
+$log->("mailchimp: $res");
     }
 
 ## delete:
