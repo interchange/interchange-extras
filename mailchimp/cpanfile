@@ -1,2 +1,3 @@
 requires 'Mail::Chimp3', '> 0.01';
 requires 'MIME::Types';
+requires 'namespace::autoclean', '> 0.16';
