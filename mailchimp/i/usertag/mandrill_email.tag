@@ -133,6 +133,19 @@ sub {
 		}
 	}
 
+	# Support e-mail interception (re-writing to/cc/bcc to specified
+	# address(es)).
+	my $intercept = delete $opt->{intercept} || $::Variable->{MV_EMAIL_INTERCEPT};
+	if ($intercept) {
+		for my $to (@$tos) {
+			next unless $to->{email};
+			my $type = $to->{type} || 'to';
+::logError('Intercepting outgoing email (%s: %s) and instead sending to "%s"', $type, $to->{email}, $intercept);
+			$ext->{"x-intercepted-$type"} = $to->{email};
+			$to->{email} = $intercept;
+		}
+	}
+
 	my $ok;
 	eval {
         $ok = $Tag->mandrill({
