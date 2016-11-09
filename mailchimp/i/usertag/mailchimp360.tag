@@ -53,9 +53,9 @@ sub {
         my $campaign_id = $opt->{campaign_id}   || Vend::Util::read_cookie($cid_cookie_name);
         my $email_id    = $opt->{email_address} || Vend::Util::read_cookie($eid_cookie_name) || $::Values->{email};
         my $store_id    = $opt->{store_id}      || $::Variable->{MAILCHIMP_STORE_ID};
-        unless ( $campaign_id and $email_id and $store_id ) {
+        unless ( $email_id and $store_id ) {
             return $opt->{show}
-                ? die 'mailchimp360 called without required parameters of: campaign_id, email_id, store_id'
+                ? die 'mailchimp360 called without required parameters of: email_id, store_id'
                 : undef;
         }
 

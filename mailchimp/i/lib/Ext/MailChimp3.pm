@@ -150,6 +150,8 @@ sub queue ( $self, $method, $opt={} ) {
     my $qdb = $self->_ic->dbh('mailchimp_queue')
         or return $self->_ic->die('no queue table');
 
+    $opt = $self->_massage_options($opt, $method);  # must massage here, as the uneval will convert undef to ''
+
     $qdb->do(
         q{INSERT INTO mailchimp_queue ( method, opt ) VALUES ( ?, ? )},
         {},
@@ -396,6 +398,7 @@ sub _massage_options ( $self, $opt, $method='' ) {
 
 sub _find_email_from_id ( $self, $email, $campaign_id ) {
     return $email unless $email !~ /@/;
+    return $email unless $campaign_id;
 
     my $camp = $self->do( 'campaign', { campaign_id => $campaign_id, fields => 'recipients.list_id' } );
     my $list_id = ( ref $camp and $camp->{recipients} ) ? $camp->{recipients}{list_id} : '';
