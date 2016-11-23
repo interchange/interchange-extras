@@ -58,6 +58,7 @@ has desc_field     => ( is => 'ro', default => $Vend::Cfg->{DescriptionField} ||
 has price_field    => ( is => 'ro', default => $Vend::Cfg->{PriceField}       || 'price', );
 has vendor_field   => ( is => 'ro', default => $Vend::Cfg->{CategoryField}    || 'category', );
 has variants_table => ( is => 'ro', default => $Vend::Cfg->{ProductFiles}[1]  || 'variants', );
+has key_field      => ( is => 'ro', default => 'sku' );
 
 =item * debug
 
@@ -412,13 +413,13 @@ sub _get_products ($self) {
     my $sql = sprintf(
         q{
             SELECT
-                sku AS id,
+                %s AS id,
                 %s AS title,
                 %s AS price,
                 %s AS vendor
             FROM %s
         },
-        $self->desc_field, $self->price_field, $self->vendor_field, $self->products_table
+        $self->key_field, $self->desc_field, $self->price_field, $self->vendor_field, $self->products_table
     );
     return $self->_ic->dbh( $self->products_table )->selectall_arrayref( $sql, { Slice => {} } );
 }
