@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use Vend::Interpolate;
+use Carp qw/ carp cluck /;
 
-# ABSTRACT: functions for our own modules when called outside of $Vend
+# ABSTRACT: functions for our own modules when called outside of Interchange
 
 BEGIN {
     if ($Vend::Cfg->{Database}) {
@@ -20,6 +21,7 @@ sub new {
     my $class = shift;
     my $opt = shift || {};
     my $self = { %$opt };
+    $self->{ic_present} = $Vend::Cfg->{Database};
     bless $self, $class;
     return $self;
 }
@@ -28,23 +30,20 @@ sub log {
     my $self = shift;
     my $fmt = shift;
     my $msg = sprintf($fmt, @_);
-    if ($Vend::Cfg->{Database}) {
-        ::logError($msg, { file => $self->{logfile} });
-    }
-    else {
-        carp $msg;
-    }
-    return;
+    $self->{ic_present}
+        ? ::logError( $msg, { file => $self->{logfile} } )
+        : carp $msg;
 }
 
 sub die {
     my $self = shift;
     my $fmt = shift;
     my $msg = sprintf($fmt, @_);
-    if ($Vend::Cfg->{Database}) {
+    $self->{ic_present} and do {
         Vend::Tags->error({ name => $self->{error_name}, set => $msg });
         ::logError('died: ' . $msg, { file => $self->{logfile} });
-    }
+        return;
+    };
     cluck $msg;
 }
 
@@ -52,14 +51,12 @@ sub warn {
     my $self = shift;
     my $fmt = shift;
     my $msg = sprintf($fmt, @_);
-    if ($Vend::Cfg->{Database}) {
+    $self->{ic_present} and do {
         Vend::Tags->warnings($msg);
         ::logError($msg, { file => $self->{logfile} });
-    }
-    else {
-        carp "warn: $msg";
-    }
-    return;
+        return;
+    };
+    carp "warn: $msg";
 }
 
 sub uneval {
