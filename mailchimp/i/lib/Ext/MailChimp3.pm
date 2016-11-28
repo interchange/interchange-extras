@@ -186,10 +186,12 @@ $self->debug and $self->_ic->log('opt now %s', $self->_ic->uneval($opt, 1) );
     my $result = keys %$opt ? $self->_mc->$method(%$opt) : $self->_mc->$method;
     !ref $result and return $result;
 
-    $result->{error}
-        and return $self->hide
-            ? $self->_ic->log( $result->{error} )
-            : $self->_ic->die( '%s for: %s, content: %s', $result->{error}, $method, $self->_ic->uneval($result->{content},1) );
+    $result->{error} and do {
+        $self->_ic->log( '%s for: %s, content: %s', $result->{error}, $method, $self->_json->encode($result->{content}) );
+        return if $self->hide;
+        ref $result->{content} and return $self->_ic->die( $result->{content}{title} || $result->{content}{detail} );
+        return $self->_ic->die('Failure; please contact us.');
+    };
 
     !$result->{code} or $result->{code} !~ /^20/
         and return $self->_ic->die( 'failed for method "%s": %s. original opt: %s',
