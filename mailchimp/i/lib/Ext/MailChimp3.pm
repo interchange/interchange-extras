@@ -91,7 +91,12 @@ has _mc => (
 has _ic => (
     is      => 'ro',
     isa     => InstanceOf ['Ext::OurTags'],
-    default => sub { Ext::OurTags->new( { logfile => ( $Vend::Cfg->{Variable}{LOGDIR} || 'logs' ) . '/mailchimp3.log' } ) },
+    default => sub {
+        Ext::OurTags->new({
+            logfile    => ( $Vend::Cfg->{Variable}{LOGDIR} || 'logs' ) . '/mailchimp3.log',
+            error_name => 'email',
+        })
+    },
 );
 
 has _json => (
