@@ -6,10 +6,15 @@ use Ext::MailChimp3;
 sub {
     my ($method, $opt) = @_;
     my $mc = Ext::MailChimp3->new(
-        api_key  => $::Variable->{MAILCHIMP_API_KEY},
-        store_id => $opt->{store_id} || $::Variable->{MAILCHIMP_STORE_ID} || undef,
-        debug    => delete $opt->{debug},
-        hide     => delete $opt->{hide},
+        api_key        => $::Variable->{MAILCHIMP_API_KEY},
+        store_id       => $opt->{store_id} || $::Variable->{MAILCHIMP_STORE_ID} || undef,
+        debug          => delete $opt->{debug},
+        hide           => delete $opt->{hide},
+        products_table => $Vend::Cfg->{ProductFiles}[0],
+        desc_field     => $Vend::Cfg->{DescriptionField},
+        price_field    => $Vend::Cfg->{PriceField},
+        vendor_field   => $Vend::Cfg->{CategoryField},
+        variants_table => $Vend::Cfg->{ProductFiles}[1],
     );
 
     delete $opt->{queue}

@@ -53,11 +53,11 @@ has store_id => (
     is => 'ro',
 );
 
-has products_table => ( is => 'ro', default => $Vend::Cfg->{ProductFiles}[0]  || 'products', );
-has desc_field     => ( is => 'ro', default => $Vend::Cfg->{DescriptionField} || 'description', );
-has price_field    => ( is => 'ro', default => $Vend::Cfg->{PriceField}       || 'price', );
-has vendor_field   => ( is => 'ro', default => $Vend::Cfg->{CategoryField}    || 'category', );
-has variants_table => ( is => 'ro', default => $Vend::Cfg->{ProductFiles}[1]  || 'variants', );
+has products_table => ( is => 'ro', default => 'products', );
+has desc_field     => ( is => 'ro', default => 'description', );
+has price_field    => ( is => 'ro', default => 'price', );
+has vendor_field   => ( is => 'ro', default => 'category', );
+has variants_table => ( is => 'ro', default => 'variants', );
 has key_field      => ( is => 'ro', default => 'sku' );
 
 =item * debug
