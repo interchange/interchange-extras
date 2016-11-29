@@ -156,7 +156,7 @@ sub queue ( $self, $method, $opt={} ) {
     my $qdb = $self->_ic->dbh('mailchimp_queue')
         or return $self->_ic->die('no queue table');
 
-    $opt = $self->_massage_options($opt, $method);  # must massage here, as the uneval will convert undef to ''
+    $opt = $self->_remove_undefs($opt);  # the uneval will convert undef to ''
 
     $qdb->do(
         q{INSERT INTO mailchimp_queue ( method, opt ) VALUES ( ?, ? )},
@@ -366,11 +366,7 @@ sub _massage_options ( $self, $opt, $method='' ) {
     ref $opt eq 'ARRAY' and map { $self->_massage_options($_) } @$opt;
     return $opt unless ref $opt eq 'HASH';
 
-    # remove undefs
-    while (my ($k,$v) = each %$opt) {
-        ref $v and $v = $self->_massage_options($v);
-        delete $opt->{$k} unless defined $v;
-    }
+    $opt = $self->_remove_undefs($opt);
 
     # convert item quantities to be integers
     $opt->{lines} and do {
@@ -387,6 +383,7 @@ sub _massage_options ( $self, $opt, $method='' ) {
     # add store_id
     my %needs_store_id = qw(
         add_product 1
+        orders 1
         product 1
         products 1
         upsert_variant 1
@@ -401,6 +398,14 @@ sub _massage_options ( $self, $opt, $method='' ) {
         and $opt->{customer}{email_address}
         and $opt->{customer}{email_address} = $self->_find_email_from_id( $opt->{customer}{email_address}, $opt->{campaign_id} );
 
+    return $opt;
+}
+
+sub _remove_undefs ( $self, $opt={} ) {
+    while (my ($k,$v) = each %$opt) {
+        ref $v eq 'HASH' and $v = $self->_remove_undefs($v);
+        delete $opt->{$k} unless defined $v;
+    }
     return $opt;
 }
 
