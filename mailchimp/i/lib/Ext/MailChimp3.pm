@@ -236,7 +236,7 @@ sub create_products ( $self, $only_new=1 ) {
     my $our_prods = $self->_our_products();
     my $i = 0;
     my $count = scalar @$our_prods;
-    for my $prod (sort { $a->{id} <=> $b->{id} } @$our_prods) {
+    for my $prod (sort { $a->{id} cmp $b->{id} } @$our_prods) {   # if all numeric ids, could use spaceship operator
 $self->_ic->log( 'checking %s of %s: %s', $i++, $count, $prod->{id} );
         if ( $theirs{ $prod->{id} } ) {
             next unless ! $only_new;    # continue unless doing all
