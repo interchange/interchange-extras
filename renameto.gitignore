@@ -21,9 +21,12 @@ products/.*.gdbm
 products/.*.sql
 products/*.gdbm
 products/*.txt
-!products/variable.txt
-!products/country.txt
-!products/state.txt
 products/*.asc
+!products/country.txt
+!products/locale.txt
+!products/state.txt
+!products/variable.txt
+!products/access.asc
+!products/mv_metadata.asc
 products/*.autonumber
 products/*.*.lock
