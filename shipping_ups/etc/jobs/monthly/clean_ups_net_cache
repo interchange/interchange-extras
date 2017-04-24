@@ -1,0 +1,7 @@
+[perl table=ups_net_cache]
+	my $db = $Db{ups_net_cache};
+	my $earlier = $Tag->convert_date({ fmt => '%s', adjust => '-60 days' });
+	my $res = $db->query("DELETE FROM ups_net_cache WHERE updated < $earlier");
+	return "Deleted $res records from ups_net_cache older than $earlier" if $res;
+	return;
+[/perl]
