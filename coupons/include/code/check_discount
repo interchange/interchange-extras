@@ -1,0 +1,133 @@
+
+[perl tables="promotion products"]
+	delete $Values->{discount};
+	delete $CGI->{everything_ok};
+	delete $CGI->{percent};
+	if(my $doll = $Values->{dollars_off}) {
+		unless( $doll =~ m/(\d+(\.\d+)?)/ ) {
+			$Tag->error({
+				name => "Dollars off",
+				set => "Bad value '$doll' for dollars off.",
+			});
+			return;
+		}
+		$Values->{discount} = $1;
+	}
+	elsif(my $pct = $Values->{percent_off}) {
+		unless( $pct =~ m/(\d+(\.\d+)?)/ ) {
+			$Tag->error({
+				name => "Percent off",
+				set => "Bad value '$pct' for percent off.",
+			});
+			return;
+		}
+		$Values->{discount} = $1 . "%";
+		$CGI->{percent} = 1;
+	}
+
+	if($Values->{free_item} && ! $Values->{discount}) {
+		$Values->{discount_type} = 'MESSAGE_ONLY';
+	}
+	elsif($Values->{free_shipping} && ! $Values->{discount}) {
+		$Values->{discount_type} = 'MESSAGE_ONLY';
+	}
+	elsif($Values->{qualify_sku}) {
+		$Values->{discount_type} = 'SKU';
+	}
+	elsif ($Values->{qualify_variant}) {
+		$Values->{discount_type} = 'VARIANT';
+	}
+	elsif ($Values->{discount_type}) {
+		# do nothing
+	}
+	else {
+		$Values->{discount_type} = 'ENTIRE_ORDER';
+	}
+
+	if(my $exc = $Values->{exclude_all_items}) {
+		unless($Values->{discount_type} =~ /^(QUALIFYING_ITEMS|QB_DOLLOFF)$/) {
+			$Tag->error({
+				name => "Exclude from discount",
+				set => "Can't use this unless Discount Type is QUALIFYING ITEMS or ENTIRE ORDER",
+			});
+			return;
+		}
+		my $pdb = $Db{products};
+		my @excs = split /,\s*/, $exc;
+		for(@excs) {
+			my ($col, $val) = split /:/;
+			unless($val) {
+				$Tag->error({
+					name => "Exclude from discount",
+					set => "Bad format: $_. Need 'column:value', e.g.: prod_group:Water Filters.",
+				});
+				return;
+			}
+			unless(defined $pdb->test_column($col)) {
+				$Tag->error({
+					name => "Exclude from discount",
+					set => "Bad products column: $col",
+				});
+				return;
+			}
+		}
+	}
+
+	if($Values->{timed}) {
+		my $now = $Tag->time({ body => '%Y%m%d' });
+		if($Values->{start_date} gt $Values->{finish_date}) {
+			$Tag->error({
+				name => "Start date",
+				set => "Start date is greater than finish date.",
+			});
+			return;
+		}
+		if($now gt $Values->{finish_date}) {
+			$Tag->error({
+				name => "Finish date",
+				set => "Promotion set to expire in the past.",
+			});
+			return;
+		}
+		my $then = $Tag->convert_date({ days => 180, body => $now , fmt=>'%Y%m%d'});
+Debug("then=$then start=$Values->{start_date}");
+		if($then lt $Values->{start_date}) {
+			$Tag->error({
+				name => "Start date",
+				set => "Promotion set to start more than 6 months from now.",
+			});
+			return;
+		}
+	}
+
+	if(
+		length($Values->{promo_code}) < 5
+		or 
+		length($Values->{promo_code}) > 10
+		or
+		$Values->{promo_code} !~ /^[A-Z0-9]+$/
+		)
+	{
+			$Tag->error({
+				name => "Promo code",
+				set => "Promotion code must be all uppercase letters (or digits) and be between 5 and 10 characters long.",
+			});
+			return;
+		
+	}
+
+	my $db = $Db{promotion};
+
+	if($db->field($Values->{promo_code}, 'code')) {
+			$Tag->error({
+				name => "Promo code",
+				set => "Promotion code $Values->{promo_code} already exists.",
+			});
+			return;
+		
+	}
+
+
+	$CGI->{everything_ok} = 1;		
+	return;
+[/perl]

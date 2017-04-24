@@ -1,0 +1,96 @@
+[tmp page_title]Make multiple discounts from one discount[/tmp]
+[tmp page_secure][either]@@UI_SECURE@@[or]__UI_SECURE__[/either][/tmp]
+[tmp ui_class]Miscellaneous[/tmp]
+[tmp third_menu]MakeDiscount[/tmp]
+[tmp help_name]discount.custom[/tmp]
+[tmp icon_name]icon_people.gif[/tmp]
+[tmp page_perm]order=l[/tmp]
+
+@_UI_STD_HEAD_@
+
+[if cgi code_to_copy]
+
+[perl tables=promotion]
+	return if $CGI->{promo_codes};
+	my $db = $Db{promotion};
+	my $parent_code = $db->field($CGI->{code_to_copy}, 'description');
+
+	$parent_code =~ s/[^A-HJ-NP-Z]+//g;
+	my @caps = ('A' .. 'H', 'J' .. 'N', 'P' .. 'Z');
+
+	my $codes;
+	my $i = 0;
+
+	while($i < $CGI->{how_many}) {
+		my $code = $parent_code;
+		while(length($code) < 5 or $db->field($code, 'code')) {
+			$code .= length($code) % 2
+				 ? $caps[ rand(@caps) ] 
+				 : int(rand(9)) + 1;
+		}
+		push @codes, $code;
+		++$i;
+	}
+	$CGI->{promo_codes} = join "\n", @codes;
+
+	for (@codes) {
+		$db->clone_row( $CGI->{code_to_copy}, $_, { use_once => '1' } );
+	}
+
+	return;
+[/perl]
+
+<table>
+<tr>
+	<td valign=top>
+		Duplicated codes are:
+	</td>
+	<td>
+		<textarea cols=10 rows=10>[cgi promo_codes]</textarea>
+	</td>
+</tr>
+</table>
+
+
+[else]
+
+Duplicated codes will be marked for one-time use.
+[table-editor
+	action=return
+	defaults=0
+	default.timed="1"
+	mv_nextpage=@@MV_PAGE@@
+	help=`{
+		code_to_copy => 'You should make sure the promotion <b>is not expired or inactive</b>.',
+	}`
+	label=`{
+		code_to_copy => "Promotion code to duplicate",
+		how_many => "How many duplicates?",
+	}`
+	check=`{
+		code_to_copy => 'required',
+		how_many => 'regex ^[0-9]$ "Must be a number"',
+	}`
+	lookup_query=`{
+		code_to_copy => 'select code,code,description from promotion order by description',
+	}`
+	widget=`{
+		code_to_copy => 'select',
+		how_many => 'text_5',
+	}`
+	options.code_to_copy="=--select promotion--"
+	mv_data_table=promotion
+	notable=1
+	ui_data_fields=""
+	ui_wizard_fields="code_to_copy how_many"
+	wizard=1
+	]
+
+
+[/else]
+[/if]
+
+[comment]
+<xmp>[dump key=values]</xmp>
+[/comment]
+@_UI_STD_FOOTER_@

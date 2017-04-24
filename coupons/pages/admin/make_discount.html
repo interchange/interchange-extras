@@ -1,0 +1,44 @@
+[tmp page_title]Make a discount[/tmp]
+[tmp page_secure][either]@@UI_SECURE@@[or]__UI_SECURE__[/either][/tmp]
+[tmp ui_class]Miscellaneous[/tmp]
+[tmp third_menu]MakeDiscount[/tmp]
+[tmp help_name]discount.custom[/tmp]
+[tmp icon_name]icon_people.gif[/tmp]
+[tmp page_perm]order=l[/tmp]
+
+@_UI_STD_HEAD_@
+
+[table-editor
+	action=return
+	defaults=1
+	default.timed="1"
+	mv_nextpage=admin/make_discount_2
+	filter.description="nullselect"
+	help=`{
+	}`
+	label=`{
+		description => "Enter the show name or other description",
+		timed => "Is this to have a start and end date?",
+		auth_by => "Person authorizing",
+	}`
+	check=`{
+		description => 'required',
+		auth_by => 'required',
+	}`
+	widget=`{
+		description => 'text_50',
+		auth_by => 'text_30',
+		timed => 'yesno',
+	}`
+	mv_data_table=promotion
+	notable=1
+	ui_data_fields=""
+	ui_wizard_fields="description auth_by timed start_date finish_date"
+	width.description="50"
+	wizard=1
+	]
+
+[comment]
+<xmp>[dump key=values]</xmp>
+[/comment]
+@_UI_STD_FOOTER_@

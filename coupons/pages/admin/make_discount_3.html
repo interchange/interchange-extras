@@ -1,0 +1,194 @@
+[tmp page_title]Make a discount -- check before creating[/tmp]
+[tmp page_secure][either]@@UI_SECURE@@[or]__UI_SECURE__[/either][/tmp]
+[tmp ui_class]Miscellaneous[/tmp]
+[tmp third_menu]MakeDiscount[/tmp]
+[tmp help_name]discount.custom[/tmp]
+[tmp icon_name]icon_people.gif[/tmp]
+[tmp page_perm]order=l[/tmp]
+
+@_UI_STD_HEAD_@
+
+[include
+	file=include/code/check_discount
+	comment="Sets cgi variable 'everything_ok' if all ok"
+]
+
+[if cgi everything_ok]
+<table style="margin: 0; padding: 0" cellspacing=0>
+	<tr class=ralt>
+		<td width=200 class=clabel>
+			Promo code
+		</td>
+		<td class=cdata>
+			[value promo_code]
+		</td>
+	</tr>
+	<tr class=ralt>
+		<td width=200 class=clabel>
+			Description
+		</td>
+		<td class=cdata>
+			[value description]
+		</td>
+	</tr>
+	<tr class=ralt>
+		<td class=clabel>
+			Authorized by
+		</td>
+		<td class=cdata>
+			[value auth_by]
+		</td>
+	</tr>
+	<tr class=ralt>
+		<td class=clabel>
+			Applies to
+		</td>
+		<td class=cdata>
+			[if value qualify_group]
+				<i>Price group</i> [value qualify_group]
+			[elsif value qualify_sku]
+				[value qualify_sku] [data table=products col=description key="[value qualify_sku]"]
+				[if value qualify_sku_number] (mininum quantity of [value qualify_sku_number]) [/if]
+			[/elsif]
+			[elsif value qualify_variant]
+				[value qualify_variant] [data table=products col=description key="[value qualify_variant]"] and its variants
+			[/elsif]
+			[else]
+				<i>Any product</i>
+				[if value exclude_all_items]<i>(except [value exclude_all_items])</i>[/if]
+			[/else]
+			[/if]
+
+			[if value qualify_number > 0]
+				when items are at least 
+				[value qualify_number].
+			[/if]
+
+			[if value qualify_subtotal > 0]
+				when purchase is at least 
+				[value name=qualify_subtotal keep=1 filter=currency].
+			[/if]
+
+			[if value apply_multiple]
+				Discount can be used with other discounts.
+			[else]
+				Discount must be the only discount.
+			[/else]
+			[/if]
+
+			[if value once_per_customer]
+				Only one use per customer (email).
+			[elsif value new_customers_only]
+				Only for new customers (email).
+			[/elsif]
+			[/if]
+		</td>
+	</tr>
+	[if cgi percent]
+	<tr class=ralt>
+		<td class=clabel>
+			Percent off
+		</td>
+		<td class=cdata>
+			[value discount]
+		</td>
+	</tr>
+	[else]
+	<tr class=ralt>
+		<td class=clabel>
+			Amount off
+		</td>
+		<td class=cdata>
+			[value name=discount keep=1 filter=currency]
+		</td>
+	</tr>
+	[/else]
+	[/if]
+	[if value free_item]
+	<tr class=ralt>
+		<td class=clabel>
+			Free item
+		</td>
+		<td class=cdata>
+			[value free_item]
+		</td>
+	</tr>
+		[if value free_message]
+		<tr class=ralt>
+			<td class=clabel>
+				Free item message
+			</td>
+			<td class=cdata>
+				[value free_message]
+			</td>
+		</tr>
+		[/if]
+	[/if]
+	[if value free_shipping]
+	<tr class=ralt>
+		<td class=clabel>
+			Free shipping
+		</td>
+		<td class=cdata>
+			Gets free shipping for each qualifying item (or entire order)
+		</td>
+	</tr>
+	[/if]
+	[if value timed]
+	<tr class=ralt>
+		<td class=clabel>
+			Promotion begins
+		</td>
+		<td class=cdata>
+			[value name=start_date keep=1 filter='convert_date."%c"']
+		</td>
+	</tr>
+	<tr class=ralt>
+		<td class=clabel>
+			Promotion ends
+		</td>
+		<td class=cdata>
+			[value name=finish_date keep=1 filter='convert_date."%c"']
+		</td>
+	</tr>
+	[/if]
+	<tr>
+		<td>
+		</td>
+		<td>
+			<form action="[process href=admin/make_discount_3]">
+			<input type=hidden name="mv_session_id" value="[data session id]">
+			<input type=hidden name="mv_action" value="go">
+			<input type=hidden name="do_discount" value="go">
+			[button 
+				text="&lt;-- Back"
+				class=s2
+				]
+				mv_todo=back
+				mv_nextpage=admin/make_discount_2
+				[/button]
+			[button 
+				text="Finish"
+				class=s2
+				style="font-weight: bold; color: black"
+				]
+				mv_todo=go
+				mv_nextpage=admin/make_discount_finish
+				[/button]
+			</form>
+		</td>
+	</tr>		
+</table>
+[else]
+	There is something wrong with your submission.
+
+	[error auto=1 class=cerror]
+
+	[page admin/make_discount]Please return and correct.</a>
+[/else]
+[/if]
+
+[comment]
+<xmp>[dump key=values]</xmp>
+[/comment]
+@_UI_STD_FOOTER_@

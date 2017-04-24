@@ -1,0 +1,1 @@
+code	timed	inactive	start_date	finish_date	discount_type	discount	discount_code	qualify_group	qualify_number	qualify_subtotal	qualify_code	free_item	free_message	note	home_page	disqualify_note	free_shipping	recur_interval	auth_by	create_date	description	apply_multiple	qualify_sku	qualify_sku_number	qualify_variant	use_once	once_per_customer	new_customers_only	exclude_all_items

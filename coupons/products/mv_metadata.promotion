@@ -1,0 +1,18 @@
+code	type	width	height	field	db	name	outboard	options	attribute	label	help	lookup	filter	help_url	pre_filter	lookup_exclude	prepend	append	display_filter	default	extended
+promotion	table					don't create here! use Misc page														{'panel_shade' => "f",'ui_show_fields' => "codedescriptioninactivetimedfinish_datediscount_typediscountqualify_skuqualify_variantuse_onceonce_per_customernew_customers_only",'ui_sort_field' => "start_date",'display_type' => "   image_meta",'ui_sort_option' => "r",'ui_more_decade' => "10",}
+promotion::discount	text									Discount	Enter either a percent amount off like:  10%<br>Or a dollar amount off: 10.00									
+promotion::discount_code											Programming code for unique discount. (NOT the same as 'code', above)									
+promotion::discount_type	select							=--select--,QB_DOLLOFF=Dollars off ENTIRE ORDER,ALL_ITEMS=Percent off ALL ITEMS,QUALIFYING_ITEMS=Percent off QUALIFYING ITEMS (all except some),SKU=Discount on one SKU only,GROUP=Discount when purchasing from a price group,VARIANT=Discount on all variant SKUs,MESSAGE_ONLY=No discount; just display message		Promotion type										
+promotion::exclude_all_items		50																		
+promotion::finish_date	date									Expires			date_change							
+promotion::free_shipping	yesno									Free Shipping?										
+promotion::home_page	yesno									Show on home page										
+promotion::inactive	yesno									Inactive										
+promotion::note	textarea	50	5							Notes for receipt	It is normal to see 2 % signs. Two are needed in order for it to display properly on the Checkout page.									
+promotion::qb_discitem										Discounted Item for QB	Alternative to dollar-off on ENTIRE_ORDER; keeps QuickBooks in balance.									
+promotion::qualify_group	select				pricing			=--select Group if applicable--				price_group								
+promotion::qualify_sku					products															
+promotion::recur_interval	select							=--none--,1 week,2 weeks,3 weeks,4 weeks		Recurrence										
+promotion::start_date	date									Start midnight of			date_change							
+promotion::timed	yesno									Timed promotion?										
+promotion::use_once	yesno									Inactivate after use?										

@@ -1,0 +1,94 @@
+[tmp page_title]Make a discount[/tmp]
+[tmp page_secure][either]@@UI_SECURE@@[or]__UI_SECURE__[/either][/tmp]
+[tmp ui_class]Miscellaneous[/tmp]
+[tmp third_menu]MakeDiscount[/tmp]
+[tmp help_name]discount.custom[/tmp]
+[tmp icon_name]icon_people.gif[/tmp]
+[tmp page_perm]order=l[/tmp]
+
+@_UI_STD_HEAD_@
+
+[include
+	file=include/code/check_discount
+	comment="Sets cgi variable 'everything_ok' if all ok"
+]
+
+[if cgi everything_ok]
+
+[perl tables=promotion]
+
+	my $db = $Db{promotion};
+		
+	if(!$CGI->{do_discount}) {
+		$Tag->error({
+			name => "Install discount",
+			set => "I don't know where you came from, but it wasn't the right place.",
+		});
+		return;
+	}
+
+	my @unchanged = qw/
+		discount
+		timed
+		start_date
+		finish_date
+		apply_multiple
+		qualify_group
+		qualify_sku
+		qualify_sku_number
+		qualify_variant
+		qualify_number
+		qualify_subtotal
+		auth_by
+		description
+		discount_type
+		exclude_all_items
+		disqualify_note
+		note
+		free_item
+		free_shipping
+		free_message
+		once_per_customer
+		new_customers_only
+	/;
+
+	my %record;
+
+	for(@unchanged) {
+		$record{$_} = $Values->{$_};
+	}
+
+	$record{note} and $record{note} =~ s/\%/\%\%/g;
+
+	$record{create_date} = $Tag->time({ body => '%Y%m%d%H%M%S' });
+	$record{inactive} = $Variable->{PROMOTION_REQUIRES_APPROVAL};
+
+	if ($record{discount_type} eq 'QB_DOLLOFF') {
+		$record{discount_code} = 'return ($s / $q) * -1';
+	}
+
+	$CGI->{promotion_success} = $db->set_slice($Values->{promo_code}, \%record);		
+	return;
+[/perl]
+
+	[if cgi promotion_success]
+		Successfully entered promotion [value promo_code]. 
+	[else]
+		Error entering promotion [value promo_code].
+	[/else]
+	[/if]
+
+[else]
+	There is something wrong with your submission.
+
+	[error auto=1 class=cerror]
+
+	[page admin/make_discount]Please return and correct.</a>
+[/else]
+[/if]
+
+
+[comment]
+<xmp>[dump key=values]</xmp>
+[/comment]
+@_UI_STD_FOOTER_@

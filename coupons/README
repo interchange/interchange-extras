@@ -1,0 +1,179 @@
+===========
+ Promotion
+===========
+
+dbconf/mysql/promotion.mysql
+include/code/check_discount
+pages/admin/make_discount*
+products/promotion.txt
+usertag/promotion.tag
+products/mv_metadata.promotion   (add into real mv_metadata.asc)
+
+Add 'promo_code varchar(64)' column to "transactions"
+Modify pages/admin/make_discount_2.html accordingly, if necessary.
+
+catalog.cfg:
+	 ifndef COMMON_ORDER_PROFILE
+	 Variable COMMON_ORDER_PROFILE <<EOV
+	+       [promotion code="[value promo_code]" hide=1]
+			mv_same_billing=always_pass
+			fname=required
+			lname=required
+
+	 OrderProfile    etc/profiles.order etc/profiles.login etc/profiles.misc
+
+	+OrderCleanup <<EOC
+	+    [calcn]
+	+        $Values->{promo_code} = '';
+	+        delete $Scratch->{promo_code};
+	+        %$::Discounts = ();
+	+    [/calcn]
+	+EOC
+
+etc/log_transaction:
+	+promo_code: [value filter=strip name=promo_code]
+	 [/import]
+
+include/menus/MiscFunction.txt:
+	 admin/make_discount             Make promotion code
+
+pages/ord/checkout.html && pages/ord/paypalcheckout.html:
+	+<!-- 
+	+	[calcn]
+	+		my @pc_values = split(/\s+/, $Values->{promo_code});
+	+		my @pc_scratches = split(/\s+/, $Scratch->{promo_code});
+	+		my %promos;
+	+		for(@pc_values, @pc_scratches) {
+	+			my $key = uc;
+	+			$promos{$key} = 1;
+	+		}
+	+		$Values->{promo_code} = join(' ', keys %promos);
+	+		return;
+	+	[/calcn]
+	+	[loop list="[value promo_code]"][promotion code="[loop-code]" clear="[cgi clear_promo]"][/loop]
+	+-->
+	+
+	 <!-- BEGIN CONTENT -->
+
+pages/ord/basket (description & prices) &
+include/checkout/shopping_cart:
+
+	* Use [item-description] where we can, for on-the-fly items (QuickBooks-safe discounts)
+		-                       <strong><a href="[area href=|[alias_or_sku sku=[item-sku]]|]">[item-data products description]</a></strong>
+		+                       <strong>
+		+                       [if-item-field sku]
+		+                               <a href="[area href=|[alias_or_sku sku=[item-sku]]|]">[item-data products description]</a>
+		+                       [else]
+		+                               [item-description]
+		+                       [/else]
+		+                       [/if-item-field]
+		+                       </strong>
+
+	* prices
+          <td align="right">
+            [item-discount-price]
+			[if discount [item-code]]<div class="smallest"><b>[L]You save[/L]: [item-difference]</b></div>[/if]
+			[if-item-param mv_discount]<div class="smallest"><b>[L]You save[/L]: [item-difference]</b></div>[/if-item-param]
+			[if-item-param is_free]
+				[if-item-param mv_discount_message]<div class="smallest"><b>[item-param mv_discount_message]</b></div>[/if-item-param]
+			[else]
+				[if discount ALL_ITEMS]<div class="smallest"><b>[L]You save[/L]: [item-difference]</b></div>[/if]
+			[/else]
+			[/if-item-param]
+			[if-item-param discount_ineligible]<div class="smallest"><b>Not eligible for discount</b></div>[/if-item-param]
+          </td>
+          <td align="right">
+            [item-discount-subtotal]
+			[if discount [item-code]]<div class="smallest"><b>[L]You save[/L]: [item-discount]</b></div>[/if]
+			[if-item-param !is_free]
+				[if-item-param mv_discount]<div class="smallest"><b>[L]You save[/L]: [currency][calc][item-difference noformat=1]*[item-quantity][/calc][/currency]</b></div>[/if-item-param]  
+				[if discount ALL_ITEMS]<div class="smallest"><b>[L]You save[/L]: [item-discount]</b></div>[/if]
+			[/if-item-param]
+          </td>
+		
+	* input box
+						  <td class="contentbar1"><b>Total:</b></td>
+						  <td class="contentbar1"><b>[total-cost]</b></td>
+						</tr>
+		+               <tr>
+		+                 <td colspan=5>
+		+                    <label for="promo">[error name=promotion std_label="[L]Have a promo code? Enter it here[/L]:"]</label>
+		+                    <input type="text" name="promo_code" size="10" value="[value promo_code]" id="promo">
+		+                    <input type="submit" value="Apply" class="button2">
+		+                    [if value promo_code]&nbsp;<a href="[area href=@@MV_PAGE@@ form=clear_promo=1]" class=smallest>remove</a>[/if]
+		+                    [if warnings]<div style="color:green">[warnings show=1 joiner="<br>"]</div>[/if]
+		+                 </td>
+		+               </tr>
+
+pagss/admin/entry.html:
+	 @_UI_STD_HEAD_@
+	 
+	+<!-- 
+	+	[calcn]
+	+		my @pc_values = split(/\s+/, $Values->{promo_code});
+	+		my @pc_scratches = split(/\s+/, $Scratch->{promo_code});
+	+		my %promos;
+	+		for(@pc_values, @pc_scratches) {
+	+			my $key = uc;
+	+			$promos{$key} = 1;
+	+		}
+	+		$Values->{promo_code} = join(' ', keys %promos);
+	+		return;
+	+	[/calcn]
+	+	[loop list="[value promo_code]"][promotion code="[loop-code]" clear="[cgi clear_promo]"][/loop]
+	+-->
+	+
+	 [calc]
+			return unless $CGI->{customer};
+			%$Values = ();
+	@@ -326,8 +328,11 @@
+	 </TBODY>
+	 </TABLE>
+	 
+	+       <label for="promo">[error name=promotion std_label="[L]Have a promo code? Enter it here[/L]:"]</label>
+	+       <input type="text" name="promo_code" size="10" value="[value promo_code]" id="promo">
+	+       <input type="submit" value="Apply">
+	+       [if value promo_code]&nbsp;<a href="[area href=@@MV_PAGE@@ form=clear_promo=1]" class=smallest>remove</a>[/if]
+	+       [if warnings]<div style="color:green">[warnings show=1 joiner="<br>"]</div>[/if]
+	+       <br>
+	 
+	 [if errors]
+	@@ -340,8 +358,11 @@
+	<input type=text size=8 name="[modifier-name mv_price]" value="[item-param mv_price]">
+		[discount-price]
+	+	[if discount [item-code]]<div style="font-size:small"><b>[L]You save[/L]: [item-difference]</b></div>[/if]
+	+	[if-item-param mv_discount]<div style="font-size:small"><b>[L]You save[/L]: [item-difference]</b></div>[/if-item-param]
+	+	[if-item-param is_free]
+	+		[if-item-param mv_discount_message]<div style="font-size:small"><b>[item-param mv_discount_message]</b></div>[/if-item-param]
+	+	[else]
+	+		[if discount ALL_ITEMS]<div style="font-size:small"><b>[L]You save[/L]: [item-difference]</b></div>[/if]
+	+	[/else]
+	+	[/if-item-param]
+	</TD>
+	<TH class=rnorm WIDTH="2">&nbsp;</TH>
+	<TD class=rnorm VALIGN=TOP ALIGN=RIGHT>
+		[item-discount-subtotal]
+	+	[if discount [item-code]]<div style="font-size:small"><b>[L]You save[/L]: [item-discount]</b></div>[/if]
+	+	[if-item-param !is_free]
+	+		[if-item-param mv_discount]<div style="font-size:small"><b>[L]You save[/L]: [currency][calc][item-difference noformat=1]*[item-quantity][/calc][/currency]</b></div>[/if-item-param]  
+	+		[if discount ALL_ITEMS]<div style="font-size:small"><b>[L]You save[/L]: [item-discount]</b></div>[/if]
+	+	[/if-item-param]
+	</TD>
+
+pages/admin/order_view.html:
+	(after "affiliate" cell; also make "affiliate" TD a width of 12%)
+                <td width="12%" nowrap class="block4bold">
+                    [L]Promo[/L]: &nbsp;
+                    [if-loop-data transactions promo_code]
+                        <span class="maincontent">[loop-data transactions promo_code]</span>
+                    [else]
+                        <span class="maincontent">[L]none[/L]</span>
+                    [/else]
+                    [/if-loop-data]
+                </td>
+
+etc/report (replace "REFERRING URL"):
+	   REFERRING URL: [data session referer][if value promo_code]
+	   PROMO CODE: [value promo_code][/if]
+
+Copy pages/admin/orderstats.html, and pages/admin/reports/order/*

@@ -1,0 +1,115 @@
+[tmp page_title]Make a discount[/tmp]
+[tmp page_secure][either]@@UI_SECURE@@[or]__UI_SECURE__[/either][/tmp]
+[tmp ui_class]Miscellaneous[/tmp]
+[tmp third_menu]MakeDiscount[/tmp]
+[tmp help_name]discount.custom[/tmp]
+[tmp icon_name]icon_people.gif[/tmp]
+[tmp page_perm]order=l[/tmp]
+
+@_UI_STD_HEAD_@
+
+[perl tables=promotion]
+	return if $CGI->{promo_code};
+	my $code = $CGI->{description};
+
+	my $db = $Db{promotion};
+	$code =~ s/[^A-HJ-NP-Z]+//g;
+	my @caps = ('A' .. 'H', 'J' .. 'N', 'P' .. 'Z');
+	while(length($code) < 5 or $db->field('code', $code)) {
+		$code .= length($code) % 2
+			 ? $caps[ rand(@caps) ] 
+			 : int(rand(9)) + 1;
+	}
+	$CGI->{promo_code} = $code;
+	return;
+[/perl]
+
+[table-editor
+	action=return
+	defaults=1
+	default.timed=1
+	default.promo_code=`$CGI->{promo_code}`
+	mv_data_table=promotion
+	mv_nextpage=admin/make_discount_3
+	mv_prevpage=admin/make_discount
+	all-errors=1
+	notable=1
+	ui_data_fields=""
+	ui_wizard_fields="promo_code qualify_group qualify_sku qualify_sku_number qualify_variant qualify_number qualify_subtotal free_item free_message free_shipping dollars_off percent_off discount_type exclude_all_items apply_multiple once_per_customer new_customers_only note disqualify_note"
+	help=`{
+		promo_code => 'try to avoid the letters I and O',
+		qualify_group => 'from quantity pricing settings (must also specify Minimum Items or Minimum Purchase) - <b>choose "price group" Discount Type</b>',
+		qualify_number => 'e.g. 1 (counts all items in cart)',
+		qualify_subtotal => 'e.g. 10 (if using a "dollars-off" discount, set this to your ideal subtotal minus the dollars-off amount)',
+		qualify_sku => '(if discount is only for one SKU; only non-variant SKUs listed)',
+		qualify_sku_number => 'e.g. 1 (counts all of qualifying SKU in cart; must be used with "SKU to qualify")',
+		qualify_variant => '(if discount is for one parent SKU, applied to all its variants)',
+		dollars_off => 'e.g. 5 (takes precedence over Percent Off)',
+		free_item => 'SKU of item to be given free',
+		free_message => 'A note to attach to the free item when qualified',
+		free_shipping => "Must have a 'qualify' set above",
+		percent_off => 'e.g. 10 (if not expressed in Dollars Off)',
+		discount_type => '<b>How to apply the discount</b><br>If discount type = "dollars off", need "Dollars Off" entered above<br>If discount type = "percent off", need "Percent Off" entered above<br>If discount type = "one SKU only", need "SKU to qualify" above<br>If discount type = "from a price group", need "Price Group to qualify" above<br>If discount type = "all variant SKUs", need "Parent SKU to qualify" above<br>leave blank if free item only or free shipping only and no discount',
+		exclude_all_items => 'column:value to exclude from QUALIFYING_ITEMS/ENTIRE_ORDER Discount Type. Separate with commas if multiple. e.g.: prod_group:Water Filters. For column, you can use: ' . join(', ', grep {$_ !~ /^(pricing|free_ship)/} @{$Config->{AutoModifier}}),
+		apply_multiple => 'Normally this is NO, set to Yes if discount can be used in combination with other discounts.',
+		note => 'Will display on checkout page',
+	}`
+	label=`{
+		qualify_group => 'Price Group to qualify',
+		qualify_number => 'Minimum # of items to qualify',
+		qualify_subtotal => 'Minimum purchase amount to qualify',
+		qualify_sku => 'SKU to qualify',
+		qualify_sku_number => 'Minimum # of "SKU to qualify"',
+		qualify_variant => 'Parent SKU to qualify',
+		dollars_off => 'Dollars Off',
+		free_item => 'Free item',
+		free_message => 'Free item message',
+		free_shipping => 'Free shipping?',
+		percent_off => 'Percent Off',
+		discount_type => 'Discount type',
+		exclude_all_items => 'Exclude from discount',
+		apply_multiple => 'Apply multiple discounts to order?',
+		once_per_customer => 'Allow only one use per customer (email)?',
+		new_customers_only => 'Allow only for new customers (email)?',
+		note => 'Short message to customer when qualifying',
+		disqualify_note => 'Short message to customer when not qualifying',
+	}`
+	lookup_query=`{
+		free_item => "select sku,sku,description from products where inactive !=1 and ( option_type = '' or option_type is null ) union select v.code,v.code,concat(p.description,' : ',v.description) as description from variants v, products p where v.sku=p.sku and v.inactive != 1 order by description",
+		qualify_sku => "select sku,sku,description from products where inactive !=1 and ( option_type = '' or option_type is null ) order by description",
+		qualify_variant => "select sku,sku,description from products where option_type = 'Matrix' and inactive != 1 order by description",
+		qualify_group => 'select distinct price_group from pricing order by price_group',
+	}`
+	widget=`{
+		qualify_group => 'select',
+		qualify_sku => 'select',
+		qualify_sku_number => 'text_12',
+		qualify_variant => 'select',
+		qualify_number => 'text_12',
+		qualify_subtotal => 'text_12',
+		free_item => 'select',
+		free_shipping => 'yesno',
+		discount_type => 'select',
+		apply_multiple => 'yesno',
+		once_per_customer => 'yesno',
+		new_customers_only => 'yesno',
+		note => 'textarea_2_50',
+	}`
+	ui_profile="
+		promo_code=unique promotion:code
+		&or dollars_off=required, percent_off=required, free_item=required, free_shipping=required Must have one of Dollars or Percent Off or Free Item or Free Shipping
+	"
+	options.free_item="=--select product--"
+	options.qualify_sku="=--select product--"
+	options.qualify_variant="=--select parent product--"
+	options.qualify_group="=--any product--"
+	options.discount_type="=--select--,QB_DOLLOFF=Dollars off ENTIRE ORDER,ALL_ITEMS=Percent off ALL ITEMS,QUALIFYING_ITEMS=Percent off QUALIFYING ITEMS (all except some),SKU=Discount on one SKU only,GROUP=Discount when purchasing from a price group,VARIANT=Discount on all variant SKUs,MESSAGE_ONLY=No discount; just display message"
+	width.description="50"
+	filter.promo_code="word uc"
+	wizard=1
+	]
+
+[comment]
+<xmp>[dump key=values]</xmp>
+[/comment]
+@_UI_STD_FOOTER_@
