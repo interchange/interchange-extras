@@ -265,8 +265,13 @@ sub {
 			my $qemail = $tdb->quote($::Values->{email});
 			my $qcode  = $tdb->quote($code);
 			my $tq = "SELECT 'used' FROM transactions WHERE email = $qemail AND promo_code = $qcode";
-			my ($used_ary) = $tdb->query($tq);
-			return $error->("You have already used promotion code '%s'.", $code) if scalar(@$used_ary);
+			eval {
+				my ($used_ary) = $tdb->query($tq);
+				return $error->("You have already used promotion code '%s'.", $code) if scalar @$used_ary;
+			};
+			if($@) {
+				::logError("Unable to make once_per_customer check with $tq: $@");
+			}
 		}
 	}
 
@@ -276,8 +281,13 @@ sub {
 				or return $die->("userdb table does not exist.");
 			my $qemail = $udb->quote($::Values->{email});
 			my $uq = "SELECT 'existing' FROM userdb u, transactions t WHERE u.email = $qemail and t.username=u.username";
-			my ($existing_ary) = $udb->query($uq);
-			return $error->('For new customers only.') if scalar(@$existing_ary);
+			eval {
+				my ($existing_ary) = $udb->query($uq);
+				return $error->('For new customers only.') if scalar @$existing_ary;
+			};
+			if($@) {
+				::logError("Unable to make new customer check with $uq: $@");
+			}
 		}
 	}
 
@@ -371,9 +381,8 @@ sub {
 		$record->{discount_type} ||= 'SKU';
 		my $qty;
 		for(@$Items) {
-			$_->{code} = uc $_->{code};
-			$_->{sku}  = uc $_->{sku};
-			next unless $_->{code} eq $record->{qualify_sku} || $_->{sku} eq $record->{qualify_sku};
+$log->("compare lower '$_->{code}' to lower '$record->{qualify_sku}'");
+			next unless lc $_->{code} eq lc $record->{qualify_sku} || lc $_->{sku} eq lc $record->{qualify_sku};
 			next if $_->{is_free};
 			$qty += $_->{quantity};
 			last;
@@ -464,6 +473,9 @@ sub {
 				delete $d->{$_};
 			}
 		}
+		elsif($record->{discount_type} eq 'ENTIRE_ORDER') {
+			delete $d->{ENTIRE_ORDER};
+		}
 		elsif($record->{discount_type} eq 'ALL_ITEMS') {
 			delete $d->{ALL_ITEMS};
 		}
@@ -512,7 +524,7 @@ sub {
 		$thing =~ s/\s+$//;
 		if($thing =~ /^-?(\d+(?:\.\d+)?)\s*\%/) {
 			my $number = $1;
-			if($number > 99) {
+			if($number > 100) {
 				return $die->("Refuse to give discount > %s%%", $number);
 			}
 			$number /= 100;
@@ -629,6 +641,7 @@ EOF
 	elsif ($record->{discount_type} eq 'QUALIFYING_ITEMS') {
 		my $warned;
 		for my $item (@$Items) {
+			next unless $item->{price_group} eq $record->{qualify_group};
 			next if $item->{discount_ineligible};
 			$item->{mv_discount} = $disc;
 			$item->{mv_discount_message} = $record->{note};
@@ -718,9 +731,12 @@ EOF
 				mv_discount_message => $record->{free_message},
 				is_free => 1,
 			);
-			if($ib eq 'variants') {
+			if ($ib eq 'variants') {
 				$it{mv_sku} = tag_data($ib, 'sku', $add);
 				$it{option_type} = tag_data('products', 'option_type', $it{mv_sku});
+			}
+			elsif (my $option_type = tag_data('products', 'option_type', $add) ) {
+				$it{option_type} = $option_type;
 			}
 			$it{mv_free_shipping} = 1 if $record->{free_shipping};
 			push @$Items, \%it;
