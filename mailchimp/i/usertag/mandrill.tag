@@ -76,6 +76,16 @@ sub {
                 ip_pool => q{},
                 send_at => q{},
             },
+            'send-raw' => {
+                raw_message        => q{},
+                from_email         => q{},
+                from_name          => q{},
+                to                 => [],
+                async              => q{},
+                ip_pool            => q{},
+                send_at            => q{},
+                return_path_domain => q{},
+            },
             'send-template' => {
                 template_name => q{},
                 template_content => [
