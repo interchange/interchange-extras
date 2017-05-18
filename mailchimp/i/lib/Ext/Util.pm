@@ -1,20 +1,16 @@
-package Ext::OurTags;
+package Ext::Util;
+
+# ABSTRACT: functions for Ext modules
 
 use strict;
 use warnings;
 
 use Vend::Interpolate;
-use Carp qw/ carp cluck /;
-
-# ABSTRACT: functions for our own modules when called outside of Interchange
+use Vend::Util ();
+use Carp qw/ carp croak /;
 
 BEGIN {
-    if ($Vend::Cfg->{Database}) {
-        use Carp qw/ carp cluck /;
-    }
-    else {
-        require DBI;
-    }
+    require DBI if ! $Vend::Cfg->{Database};
 }
 
 sub new {
@@ -28,8 +24,8 @@ sub new {
 
 sub log {
     my $self = shift;
-    my $fmt = shift;
-    my $msg = sprintf($fmt, @_);
+    my $fmt = shift or return;
+    my $msg = sprintf $fmt, @_;
     $self->{ic_present}
         ? ::logError( $msg, { file => $self->{logfile} } )
         : carp $msg;
@@ -37,42 +33,42 @@ sub log {
 
 sub die {
     my $self = shift;
-    my $fmt = shift;
-    my $msg = sprintf($fmt, @_);
+    my $fmt = shift or return;
+    my $msg = sprintf $fmt, @_;
     $self->{ic_present} and do {
         Vend::Tags->error({ name => $self->{error_name}, set => $msg });
         ::logError('died: ' . $msg, { file => $self->{logfile} });
         return;
     };
-    cluck $msg;
+    croak $msg;
 }
 
 sub warn {
     my $self = shift;
-    my $fmt = shift;
-    my $msg = sprintf($fmt, @_);
+    my $fmt = shift or return;
+    my $msg = sprintf $fmt, @_;
     $self->{ic_present} and do {
         Vend::Tags->warnings($msg);
         ::logError($msg, { file => $self->{logfile} });
         return;
     };
-    carp "warn: $msg";
+    carp 'warn: ' . $msg;
 }
 
-sub uneval {
+sub dumper {
     my ($self, $opt, $pretty) = @_;
+    ! $self->{ic_present} and return Data::Dumper($opt);
     return $pretty ? Vend::Util::uneval($opt) : Vend::Util::uneval_it($opt);
 }
 
 sub dbh {
-    my $self = shift;
-    my $tab = shift;
+    my ($self, $tab) = @_;
     if ( $self->{_tables}{$tab} ) {
         return $self->{_tables}{$tab};
     }
     elsif ($Vend::Cfg->{Database}) {
         my $dbref = Vend::Data::dbref($tab)
-            or $self->die("No table $tab");
+            or $self->die('No table %s', $tab);
         $self->{_tables}{$tab} = $dbref->dbh();
     }
     else {
@@ -80,7 +76,7 @@ sub dbh {
             $Vend::Cfg->{Variable}->{SQLDSN},
             $Vend::Cfg->{Variable}->{SQLUSER},
             $Vend::Cfg->{Variable}->{SQLPASS},
-        ) or $self->die("No table $tab at $Vend::Cfg->{Variable}->{SQLDSN}");
+        ) or $self->die('No table %s at %s', $tab, $Vend::Cfg->{Variable}->{SQLDSN});
         $self->{_tables}{$tab} = $dbh;
     }
 }

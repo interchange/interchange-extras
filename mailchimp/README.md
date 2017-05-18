@@ -47,7 +47,7 @@ API version 1.
 
     - i/lib/Ext/MailChimp3.pm
 
-    - i/lib/Ext/OurTags.pm
+    - i/lib/Ext/Util.pm
 
     - dbconf/[mysql-or-pgsql]/mailchimp_queue.*
 

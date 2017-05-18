@@ -9,7 +9,7 @@ no warnings qw(experimental::signatures);
 
 use Types::Standard qw/ Str Bool InstanceOf /;
 use Vend::Interpolate;
-use Ext::OurTags;
+use Ext::Util;
 use Mail::Chimp3;
 use JSON;
 use Digest::MD5 qw/ md5_hex /;
@@ -90,9 +90,9 @@ has _mc => (
 
 has _ic => (
     is      => 'ro',
-    isa     => InstanceOf ['Ext::OurTags'],
+    isa     => InstanceOf ['Ext::Util'],
     default => sub {
-        Ext::OurTags->new({
+        Ext::Util->new({
             logfile    => ( $Vend::Cfg->{Variable}{LOGDIR} || 'logs' ) . '/mailchimp3.log',
             error_name => 'email',
         })
