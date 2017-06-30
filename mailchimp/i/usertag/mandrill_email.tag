@@ -146,6 +146,8 @@ sub {
 		}
 	}
 
+    return ::logError('cannot send mail to nobody') unless scalar @$tos;
+
 	my $ok;
 	eval {
         $ok = $Tag->mandrill({
