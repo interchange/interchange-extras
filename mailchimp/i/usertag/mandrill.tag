@@ -109,7 +109,7 @@ sub {
     my ($category, $call) = split '/', $method;
 
     my $struct = $api{$category}{$call}
-        or return $die->('Unsupported method: %s', $method);
+        or die sprintf 'Unsupported method: %s', $method;
 
 #$log->("struct is: " . ::uneval($struct) );
 #$log->("opt is: " . uneval($opt) );
@@ -157,12 +157,13 @@ sub {
     eval {
         $struct = grok_api($struct, $opt);
     };
-    return $die->($@) if $@;
+    $@ and die sprintf 'mandrill tag could not grok api: %s', $@;
+
 #$log->("struct is now: " . ::uneval($struct) );
 
     my $output_fmt = $opt->{output} || 'json';
     $struct->{key} = $::Variable->{MANDRILL_API_KEY} || $::Variable->{MANDRILL_TEST_API_KEY}
-        or return $die->("No API key");
+        or die 'No API key';
     my $api_url = qq{https://mandrillapp.com/api/1.0/$category/$call.$output_fmt};
 
     my $json = encode_json($struct);
@@ -177,7 +178,7 @@ sub {
     eval {
         $res = $ua->request($req);
     };
-    return $die->($@) if $@;
+    $@ and die sprintf 'failed to send request: %s', $@;
 
 #return ::uneval(%$res);  # for testing
 
@@ -227,7 +228,10 @@ $log->("err opt->message->to was: " . ::uneval($opt->{message}{to}));
         $err = $res;
     }
 
-    return $opt->{hide} ? $log->($err) : $die->($err);
+    $opt->{hide} and return $log->($err);
+    $err and die sprintf 'failed on sending: %s', $err;
+
+    return;
 }
 EOR
 UserTag mandrill Documentation <<EOD
