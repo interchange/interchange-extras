@@ -115,10 +115,10 @@ sub {
 #$log->("opt is: " . uneval($opt) );
 
      sub grok_api {
-        my ($s, $o) = @_;
+        my ($s, $o, $k) = @_;
 
         unless(ref($o) eq ref($s)) {
-            die sprintf('oops, mismatched reference type, s is: %s, o is: %s', ref($s), ref($o));
+            die sprintf 'oops, mismatched reference type, s is: %s, o is: %s, k is: %s', ref($s), ref($o), $k;
         }
         elsif (! $o) {
             return;
@@ -129,7 +129,7 @@ sub {
                 next unless $k =~ /[A-Za-z]/;
                 next unless exists $s->{$k};
 #$log->("doing hash: $k");
-                my $v = grok_api($s->{$k}, $o->{$k});
+                my $v = grok_api($s->{$k}, $o->{$k}, $k);
                 next unless defined $v and length $v;
                 $o->{$k} = $v;
             }
@@ -141,7 +141,7 @@ sub {
         }
         elsif (ref $s eq 'ARRAY') {
             for (my $y=0; $y <= $#{$s}; $y++) {
-                $o->[$y] = grok_api($s->[$y], $o->[$y]);
+                $o->[$y] = grok_api($s->[$y], $o->[$y], $k);
             }
             for(my $i = $#$o; $i >= 0; $i--) {
                 pop @$o unless $o->[$i];

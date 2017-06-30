@@ -24,11 +24,11 @@ sub {
         if ($@) {
             my $e = $@;
             $qdb->set_field( $q->{code}, 'tries', $q->{tries} + 1 );
-            $die->(sprintf 'call to mandrill.tag: %s', $e);
+            $die->('call to mandrill.tag for code %s: %s', $q->{code}, $e);
             next;
         }
         $qdb->set_field($q->{code}, 'processed', 1) if $res;
-$log->("mandrill: $res");
+$log->("mandrill: $res") if $res;
     }
 
 ## MailChimp:
@@ -46,7 +46,7 @@ $log->("mandrill: $res");
             $e = $@;
             $e =~ /'status' => 400/ and $status = 400;
             $status and $qdb->set_field($q->{code}, 'processed', $status);
-            $die->(sprintf 'call to mailchimp.tag: %s', $e);
+            $die->('call to mailchimp.tag for code %s: %s', $q->{code}, $e);
             next;
         }
         $qdb->set_field($q->{code}, 'processed', 1);
