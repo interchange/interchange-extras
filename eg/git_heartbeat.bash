@@ -11,4 +11,7 @@ find $AUTO_ADD_DIRS -print0 | xargs -0 git add
 
 DATE=`date`
 
-git commit -q -a -m "CHANGEME git heartbeat - $DATE" > /dev/null
+export GIT_COMMITTER_NAME='CHANGEME'
+export GIT_COMMITTER_EMAIL='CHANGEME@SOMETHING'
+
+git -c user.email="CHANGEME@SOMETHING" -c user.name="CHANGEME" commit -q -a -m "CHANGEME git heartbeat - $DATE"
