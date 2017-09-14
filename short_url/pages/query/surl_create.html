@@ -1,0 +1,124 @@
+[bounce page=index if="[if cgi pwd ne CHANGEME]1[/if]"]
+
+[tmp page_title]__COMPANY__ -- Short URL maker[/tmp]
+
+@_NOLEFT_TOP_@
+<!-- BEGIN CONTENT -->
+
+<h1>Short URL Maker</h1>
+
+<p><i>This only works well with __SERVER_NAME__ URLs, at the moment.</i></p>
+
+[edisplay keep=1]
+[wdisplay]
+
+[set check_track]
+	&fail=@@MV_PAGE@@
+	url=required
+	[if cgi utm_source]
+		utm_medium=required
+		utm_campaign=required
+	[/if]
+[/set]
+
+[set massage_url]
+[perl table=surl]
+	my $url = delete $CGI->{url};
+	if($CGI->{utm_source}) {
+		my $source   = delete $CGI->{utm_source};
+		my $medium   = delete $CGI->{utm_medium};
+		my $term     = delete $CGI->{utm_term};
+		my $campaign = delete $CGI->{utm_campaign};
+		for($source, $medium, $term, $campaign) {
+			s/^\s+//;
+			s/\s+$//;
+			s/["']//g;
+			s/,\s+/+/g;
+			s/\s+/_/g;
+			$_ = lc;
+		}
+		my $append = ($url =~ /\?/) ? '&' : '?';
+		$url .= $append . "utm_source=$source" . "&utm_medium=$medium" . "&utm_campaign=$campaign";
+		$url .= "&utm_term=$term" if $term;
+	}
+	my $short = $Tag->surl({ url => $url });
+	$Tag->warnings("Your short url is: <a href='$short'>$short</a>");
+
+	return;
+[/perl]
+[/set]
+
+<form action="[area href=@@MV_PAGE@@]" method=POST>
+[form-session-id]
+<input type=hidden name=pwd             value=CHANGEME>
+<input type=hidden name=mv_action       value=return>
+<input type=hidden name=mv_form_profile value=check_track>
+<input type=hidden name=mv_click        value=massage_url>
+
+<table>
+<tr>
+	<td colspan=2>
+		<label for=url>Enter the entire url you want to shorten:</label>
+		<input type=text name=url id=url value="[cgi url]" size=90>
+	</td>
+</tr>
+<tr>
+	<td colspan=2>
+		<br>
+		Optionally, add tracking for Google Analytics. You must complete the <b>bold</b> fields, if you complete any.
+		[comment]
+			## http://support.google.com/analytics/bin/answer.py?hl=en&answer=1033863
+			## http://support.google.com/analytics/bin/answer.py?hl=en&answer=1033867
+			##
+			## http://foo.com/productXYZ.html?utm_source=facebook&utm_medium=banner&utm_term=food&utm_campaign=book
+		[/comment]
+	</td>
+</tr>
+<tr>
+	<td align=right>
+		<label for=source>[error name=utm_source std_label="Campaign Source" required=1]</label>
+	</td>
+	<td>
+		<input type=text name=utm_source id=source value="[cgi utm_source]" size=25>
+		<small>(referrer: facebook, twitter, pinterest, offline)</small>
+	</td>
+</tr>
+<tr>
+	<td align=right>
+		<label for=medium>[error name=utm_medium std_label="Campaign Medium" required=1]</label>
+	</td>
+	<td>
+		<input type=text name=utm_medium id=medium value="[cgi utm_medium]" size=25>
+		<small>(marketing medium: banner, email, cpc, postcard)</small>
+	</td>
+</tr>
+<tr>
+	<td align=right>
+		<label for=term>Campaign Term</label>
+	</td>
+	<td>
+		<input type=text name=utm_term id=term value="[cgi utm_term]" size=25>
+		<small>(for paid ads, identify the keywords: running+shoes)</small>
+	</td>
+</tr>
+<tr>
+	<td align=right>
+		<label for=campaign>[error name=utm_campaign std_label="Campaign Name" required=1]</label>
+	</td>
+	<td>
+		<input type=text name=utm_campaign id=campaign value="[cgi utm_campaign]" size=25>
+		<small>(identify specifc product promotion or strategic campaign: spring_sale)</small>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td><input type=submit value="Get It"></td>
+</tr>
+</table>
+
+</form>
+
+[tmp clear_errors][error all=1 hide=1 comment="Clear errors"][/tmp]
+
+<!-- END CONTENT -->
+@_NOLEFT_BOTTOM_@

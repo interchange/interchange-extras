@@ -1,0 +1,16 @@
+========================
+ Short URL (surl)
+========================
+
+Remember NOT TO MAKE IT PUBLIC IN ANY WAY SHAPE OR FORM. THe spammers will kill you.
+
+usertag/surl.am
+usertag/surl.tag
+dbconf/mysql/surl.mysql
+pages/query/surl_create.html
+
+in httpd config (5 or more uppercase characters):
+	RewriteRule ^/([A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]*)$ /cgi-bin/public/surl/$1 [L,NS,PT]
+
+Add a link to your Miscellaneous page menu, if you want. Be sure to include the "pwd=password" in the form part.
+

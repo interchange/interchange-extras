@@ -1,0 +1,8 @@
+Database  surl  surl.txt     __SQLDSN__
+Database  surl  COLUMN_DEF   "code=varchar(32) NOT NULL PRIMARY KEY"
+Database  surl  COLUMN_DEF   url=text
+Database  surl  COLUMN_DEF   accessed=int
+Database  surl  DEFAULT_TYPE varchar(64)
+Database  surl  CREATE_EMPTY_TXT 1
+Database  surl  NAME         code url created ipaddr accessed expire_date
+NoImport surl

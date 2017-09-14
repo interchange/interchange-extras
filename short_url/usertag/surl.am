@@ -1,0 +1,64 @@
+ActionMap surl <<EOA
+sub {
+	my $path = shift;
+
+::logGlobal("Called surl with path=$path") if $path;
+	$path =~ s:^surl/?::;
+	$path =~ s:\W+::g;
+
+	my $Tag = new Vend::Tags;
+
+	my $db = Vend::Util::dbref('surl')
+		or die "No surl database?";
+	my $url;
+	if(! $path) {
+		$url = $CGI::values{url};
+		return 0 unless $url;
+		my $len = $CGI::values{length} || 6;
+		$len += 0;
+		$len ||= 6;
+::logGlobal("Called surl; no path; url=$url -- len=$len");
+		if($url !~ m{/}) {
+			$url = Vend::Util::unhexify($url);
+		}
+		my $code;
+
+		if($CGI::values{secure}) {
+			$code = generate_key($url);
+		}
+		else {
+			$code = uc( Vend::Util::random_string($len) )
+				while !$code || $db->record_exists($code);
+		}
+
+		my $record = {
+			url => $url,
+			ipaddr => $CGI::remote_addr,
+			created => POSIX::strftime('%Y%m%d%H%M%S', localtime() ),
+		};
+
+		$db->set_slice($code, $record)
+			or die "Unable to set slice: " . $db->errstr();
+
+		if($CGI::values{text}) {
+			my $body = 'http://' . $::Variable->{SERVER_NAME} . "/$code";
+			$Tag->deliver({ type => 'text/plain', body => $body });
+			return 0;
+		}
+		else {
+			$Vend::Session->{arg} = $code;
+			$CGI::values{mv_nextpage} = 'query/surl_done';
+			return 1;
+		}
+	}
+	else {
+		$url = $db->field($path, 'url') || 'http://' . $::Variable->{SERVER_NAME} . $::Variable->{CGI_URL} . '/not_found_surl';
+	}
+	if($url =~ m{http\%}) {
+		$url = unhexify($url);
+	}
+::logGlobal("Delivering $url");
+	return $Tag->deliver({ location => $url });
+	return 0;
+}
+EOA
