@@ -5,3 +5,18 @@
 	return "Deleted $res records from ups_net_cache older than $earlier" if $res;
 	return;
 [/perl]
+[perl table=ups_cache]
+    my $dbh = $Sql{ups_cache}
+        or return;
+
+    my $week_ago = $Tag->time({ body => '%s', adjust => '-7 days' });
+
+    my $sth = $dbh->prepare(q{
+        DELETE FROM ups_cache
+        WHERE updated < ?
+    });
+    $sth->execute( $week_ago )
+        or return 'could not execute';
+    return;
+[/perl]
+

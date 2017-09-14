@@ -2,11 +2,7 @@
  Greg's Net::UPS module
 ========================
 
-usertag/ups_net_query.tag
-install Net::UPS from CPAN
-modify modules in /usr/local/lib/perl5/site_perl/5.8.9/Net/, based on: eg/cpan/Net_UPS/
-
-Request access key from here: https://www.ups.com/upsdeveloperkit?loc=en_US
-
-Don't forget to set up ups_net_cache table, and monthly cleaning job, if you want.
-
+- copy in usertag, job, and dbconf files
+- install localized Net::UPS in your interchange/lib/
+- request access key from here: https://www.ups.com/upsdeveloperkit?loc=en_US
+- don't forget to setup a cronjob to run the "monthly" IC job
