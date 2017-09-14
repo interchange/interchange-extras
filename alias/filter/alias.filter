@@ -1,0 +1,8 @@
+CodeDef alias Filter
+CodeDef alias Routine <<EOR
+sub {
+    my $val = shift;
+    $val =~ s!\[area href=\|([A-Z0-9-]{2,}|[0-9]+)!\[area href=\|[alias_or_sku sku=$1]!g;
+    return $val;
+}
+EOR
