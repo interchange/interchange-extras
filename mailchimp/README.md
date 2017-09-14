@@ -3,6 +3,8 @@
 This integrates Interchange with MailChimp API version 3, and Mandrill
 API version 1.
 
+See POD in various tags and modules for documentation.
+
 ## Requirements
 
 - Perl 5.20 or higher
@@ -62,9 +64,6 @@ API version 1.
     */5 * * * * interchange/bin/interchange --runjobs=YOUR_CATALOG=minutes5 --quiet > /dev/null 2>/dev/null
     ```
 
+* Add the `MAILCHIMP_API_KEY` and `MAILCHIMP_STORE_ID` variables.
+
 * Restart Interchange.
-
-
-
-See POD in various tags and modules for documentation (e.g. `perldoc
-i/usertag/mailchimp.tag`).
