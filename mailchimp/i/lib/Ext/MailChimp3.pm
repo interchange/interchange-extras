@@ -156,15 +156,15 @@ sub queue ( $self, $method, $opt={} ) {
     my $qdb = $self->_ic->dbh('mailchimp_queue')
         or return $self->_ic->die('no queue table');
 
-    $opt = $self->_remove_undefs($opt);  # the uneval will convert undef to ''
+    $opt = $self->_remove_undefs($opt);  # the dumper will convert undef to ''
 
     $qdb->do(
         q{INSERT INTO mailchimp_queue ( method, opt ) VALUES ( ?, ? )},
         {},
-        $method, $self->_ic->uneval($opt)
+        $method, $self->_ic->dumper($opt)
     ) or return $self->_ic->die('could not insert: %s', $qdb->errstr );
 
-$self->_ic->log("queued $method, opts were: " . $self->_ic->uneval($opt) );
+$self->_ic->log("queued $method, opts were: " . $self->_ic->dumper($opt) );
     return $self->hide ? undef : 1;
 }
 
@@ -175,13 +175,13 @@ Process the request against the MailChimp API.
 =cut
 
 sub do ( $self, $method, $opt={} ) {
-#$self->_ic->log('opt was: %s', $self->_ic->uneval($opt, 1) );
+#$self->_ic->log('opt was: %s', $self->_ic->dumper($opt, 1) );
     my $old_methods = $self->_v2_method_map || {};
 #$self->debug and $self->_ic->log('method was: %s, now: %s', $method, $old_methods->{$method} || '' );
     $old_methods->{$method} and ($method, $opt) = $self->_convert_old( $old_methods->{$method}, $opt );
 
     $opt = $self->_massage_options($opt, $method);
-$self->debug and $self->_ic->log('opt now %s', $self->_ic->uneval($opt, 1) );
+$self->debug and $self->_ic->log('opt now %s', $self->_ic->dumper($opt, 1) );
 
     my $result = keys %$opt ? $self->_mc->$method(%$opt) : $self->_mc->$method;
     !ref $result and return $result;
@@ -196,8 +196,8 @@ $self->debug and $self->_ic->log('opt now %s', $self->_ic->uneval($opt, 1) );
     !$result->{code} or $result->{code} !~ /^20/
         and return $self->_ic->die( 'failed for method "%s": %s. original opt: %s',
             $method,
-            $self->_ic->uneval( $result->{content}, 'pretty' ),
-            $self->_ic->uneval( $opt, 'pretty' ),
+            $self->_ic->dumper( $result->{content}, 'pretty' ),
+            $self->_ic->dumper( $opt, 'pretty' ),
         );
 
     my $response
@@ -205,7 +205,7 @@ $self->debug and $self->_ic->log('opt now %s', $self->_ic->uneval($opt, 1) );
         ? $self->_format_response( $result->{content}{$method} || $result->{content} )
         : 1;
 
-$self->_ic->log('performed %s. response: %s', $method, $self->_ic->uneval($response, 'pretty') );
+$self->_ic->log('performed %s. response: %s', $method, $self->_ic->dumper($response, 'pretty') );
     return $self->hide ? undef : $response;
 }
 
