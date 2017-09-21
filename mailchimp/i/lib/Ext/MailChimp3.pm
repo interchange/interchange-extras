@@ -134,6 +134,7 @@ has _v2_opt_map => (
             'double-optin'  => 'double_optin',
             'double_optin'  => 'double_optin',
             'id'            => 'list_id',
+            'list_id'       => 'list_id',
             'merge_vars'    => 'merge_fields',
             'order_id'      => 'order_id',
             'queue'         => 'queue',
