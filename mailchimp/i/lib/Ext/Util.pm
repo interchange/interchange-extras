@@ -57,7 +57,7 @@ sub warn {
 
 sub dumper {
     my ($self, $opt, $pretty) = @_;
-    ! $self->{ic_present} and return Data::Dumper($opt);
+    ! $self->{ic_present} and return Data::Dumper::Dumper($opt);
     return $pretty ? Vend::Util::uneval($opt) : Vend::Util::uneval_it($opt);
 }
 
