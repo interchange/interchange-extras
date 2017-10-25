@@ -376,12 +376,7 @@ sub {
 						$f->[$j] = filter_value($filt, $f->[$j]);
 					}
 					if(length $f->[$j]) {
-						if($numeric->{$fa->[$j]}) {
-							$sheet->write_number($i, $j, $f->[$j], $format{$fa->[$j]});
-						}
-						else {
-							$sheet->write_string($i, $j, $f->[$j], $format{$fa->[$j]});
-						}
+						$sheet->write($i, $j, $f->[$j], $format{$fa->[$j]});
 					}
 				}
 			}
