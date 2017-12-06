@@ -3,4 +3,4 @@
 #
 # then run this command as root:
 
-dnsmasq --address=/.dev/127.0.0.1 --local-service
+dnsmasq --address=/.test/127.0.0.1 --local-service

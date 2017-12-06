@@ -43,12 +43,12 @@ cd /path/to/interchange/
 
 [http://localhost:5001](http://localhost:5001/)
 
-## Extra credit 1: use a ".dev" domain on your local box
+## Extra credit 1: use a ".test" domain on your local box
 
 Install `dnsmasq` and then run the [`dnsmasq.sh`](dnsmasq.sh) command as root.
 
-Alter `site.txt` to use the ".dev" domain of your choosing (plus port
-number), e.g. http://strap.dev:5001
+Alter `site.txt` to use the ".test" domain of your choosing (plus port
+number), e.g. http://strap.test:5001
 
 ## Extra credit 2: expose your local server to the internet
 
