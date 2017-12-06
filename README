@@ -1,24 +1,20 @@
 Feel free to download these files and use in your project.
 
-Suggested use is to clone the entire repository to somewhere
-standalone such as /usr/local/src, then copy files from sub-directories
-to your project as you want to use them.
+Suggested use is to clone the entire repository locally, then copy
+files from sub-directories to your project as you want to use them.
 
 The 'i' directories contain files for the Interchange server,
 located at /usr/local/interchange, or wherever your server lives.
 
-Provided by Perusion, http://www.perusion.com
+Paid support is available from End Point Corporation:
+https://www.endpoint.com/
 
-Paid support is provided by Perusion, or for free support, you may try
-the #interchange IRC channel, on the FreeNode network
-(chat.freenode.net). More info here:
+For free support, see:
 http://www.icdevgroup.org/i/dev/users/community
 
 Patches or pull requests welcome.
 
 --------
-
-Copyright (C) 2013 Hanson Investments, Inc. d/b/a Perusion
 
 This program is offered without warranty of any kind.
 See file LICENSE for redistribution terms.
